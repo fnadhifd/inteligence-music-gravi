@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>GRAVI AI × BMW M – Spotify Aura Frame</title>
+  <title>GRAVI AI × BMW M – Apple Intelligence Aura Frame</title>
   <style>
     :root {
       --m-blue: #007bff;
@@ -26,6 +26,7 @@
       color: white;
     }
 
+    /* INTRO */
     .intro {
       position: absolute;
       inset: 0;
@@ -80,6 +81,7 @@
       100% {opacity: 1; transform: translateY(0);}
     }
 
+    /* FRAME AURA */
     .frame {
       position: relative;
       width: 100vw;
@@ -140,6 +142,7 @@
       50% { opacity: 0.6; filter: blur(50px); }
     }
 
+    /* BUTTONS */
     .buttons {
       position: fixed;
       bottom: 20px;
@@ -166,20 +169,39 @@
       background: rgba(255, 255, 255, 0.1);
     }
 
-    .album-cover {
+    /* SPOTIFY SECTION */
+    .spotify {
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 300px;
-      height: 300px;
-      border-radius: 24px;
       transform: translate(-50%, -50%);
-      object-fit: cover;
-      opacity: 0;
-      transition: opacity 1s ease;
+      text-align: center;
+      color: white;
     }
-    .album-cover.show {
-      opacity: 1;
+
+    .cover {
+      width: 200px;
+      height: 200px;
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+      margin-bottom: 20px;
+    }
+
+    .connect-btn {
+      margin-top: 10px;
+      background: linear-gradient(90deg, #1db954, #1ed760);
+      border: none;
+      padding: 12px 28px;
+      border-radius: 16px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 25px rgba(30, 215, 96, 0.4);
+      transition: 0.3s;
+    }
+
+    .connect-btn:hover {
+      box-shadow: 0 0 40px rgba(30, 215, 96, 0.8);
     }
   </style>
 </head>
@@ -191,100 +213,101 @@
   </div>
 
   <div class="frame" id="frame">
-    <img id="albumCover" class="album-cover" src="" alt="Album Cover" />
+    <div class="spotify" id="spotify">
+      <img id="cover" class="cover" src="" alt="Album cover" style="display:none;">
+      <h2 id="song"></h2>
+      <h3 id="artist"></h3>
+      <button id="connectSpotify" class="connect-btn">Connect Spotify</button>
+    </div>
   </div>
+
   <div class="buttons" id="buttons">
     <button id="appleBtn">Apple Flow</button>
     <button id="rgbBtn">RGB Live</button>
-    <button id="spotifyBtn">Connect Spotify</button>
   </div>
 
   <audio id="introSound" src="audio/intro.mp3"></audio>
 
   <script>
-    const intro = document.getElementById('intro');
-    const frame = document.getElementById('frame');
-    const startBtn = document.getElementById('startBtn');
+    const CLIENT_ID = "a4c46dd220374fc586a40f8450993f5a";
+    const REDIRECT_URI = "https://inteligence-music-gravi.vercel.app/";
     const introSound = document.getElementById('introSound');
-    const albumCover = document.getElementById('albumCover');
-    const appleBtn = document.getElementById('appleBtn');
-    const rgbBtn = document.getElementById('rgbBtn');
-    const spotifyBtn = document.getElementById('spotifyBtn');
+    const spotifyDiv = document.getElementById('spotify');
+    const frame = document.getElementById('frame');
+    const connectSpotify = document.getElementById('connectSpotify');
 
+    // ----- INTRO -----
     document.getElementById('buttons').style.display = 'none';
-
-    // 🎵 TOKEN STORAGE
-    function saveToken(token) { localStorage.setItem("spotify_token", token); }
-    function getToken() { return localStorage.getItem("spotify_token"); }
-    function clearToken() { localStorage.removeItem("spotify_token"); }
-
-    // 🔄 AUTO LOAD LAST SESSION
-    window.onload = function() {
-      const existingToken = getToken();
-      if (existingToken) startNowPlaying(existingToken);
-    };
-
-    startBtn.addEventListener('click', () => {
+    document.getElementById('startBtn').addEventListener('click', () => {
       introSound.currentTime = 0;
       introSound.play();
-      intro.style.opacity = '0';
+      document.getElementById('intro').style.opacity = '0';
       setTimeout(() => {
-        intro.style.display = 'none';
+        document.getElementById('intro').style.display = 'none';
         frame.style.opacity = '1';
         document.getElementById('buttons').style.display = 'flex';
-        // stop intro after few seconds
-        setTimeout(() => {
-          introSound.pause();
-          introSound.currentTime = 0;
-        }, 4000);
       }, 2000);
     });
 
-    appleBtn.addEventListener('click', () => {
+    // ----- FRAME MODES -----
+    document.getElementById('appleBtn').addEventListener('click', () => {
       introSound.currentTime = 0;
       introSound.play();
       frame.classList.remove('rgb');
     });
-
-    rgbBtn.addEventListener('click', () => {
+    document.getElementById('rgbBtn').addEventListener('click', () => {
       introSound.currentTime = 0;
       introSound.play();
       frame.classList.add('rgb');
     });
 
-    // 🎧 SPOTIFY LOGIN
-    spotifyBtn.addEventListener('click', () => {
-      introSound.play();
-      const clientId = "a4c46dd220374fc586a40f8450993f5a";
-      const redirectUri = "https://inteligence-music-gravi.vercel.app/";
-      const scope = "user-read-currently-playing";
-      window.location.href = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}`;
-    });
+    // ----- SPOTIFY LOGIN -----
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
 
-    // 🧠 HANDLE CALLBACK (Spotify redirect)
-    if (window.location.hash) {
-      const token = window.location.hash.split('=')[1].split('&')[0];
-      saveToken(token);
-      startNowPlaying(token);
-      window.history.pushState("", document.title, window.location.pathname);
+    if (!code) {
+      connectSpotify.onclick = () => {
+        const scope = "user-read-currently-playing user-read-playback-state";
+        window.location.href = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}&scope=${scope}`;
+      };
+    } else {
+      fetch(`/api/token?code=${code}`)
+        .then(res => res.json())
+        .then(data => {
+          const access_token = data.access_token;
+          connectSpotify.style.display = 'none';
+          getNowPlaying(access_token);
+          setInterval(() => getNowPlaying(access_token), 10000);
+        });
     }
 
-    // 🎨 DISPLAY NOW PLAYING
-    async function startNowPlaying(token) {
-      const res = await fetch("https://api.spotify.com/v1/me/player/currently-playing", {
+    function getNowPlaying(token) {
+      fetch("https://api.spotify.com/v1/me/player/currently-playing", {
         headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.status === 200) {
-        const data = await res.json();
-        const imageUrl = data.item?.album?.images[0]?.url;
-        if (imageUrl) {
-          albumCover.src = imageUrl;
-          albumCover.classList.add('show');
-          const vibrant = await fetch(`https://api.color.pizza/v1/?values=${imageUrl}`);
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.item) {
+          const song = data.item.name;
+          const artist = data.item.artists.map(a => a.name).join(", ");
+          const cover = data.item.album.images[0].url;
+
+          document.getElementById('cover').src = cover;
+          document.getElementById('cover').style.display = 'block';
+          document.getElementById('song').innerText = song;
+          document.getElementById('artist').innerText = artist;
+
+          // adapt aura warna
+          frame.style.setProperty('--m-blue', averageColor(cover).vibrant || '#007bff');
         }
-      } else {
-        clearToken();
-      }
+      });
+    }
+
+    // ambil warna dominan (dummy sederhana)
+    function averageColor(imgUrl) {
+      const color = { vibrant: '#1db954' };
+      return color;
     }
   </script>
 </body>
