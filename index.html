@@ -40,16 +40,30 @@ body{
 @keyframes rgbAura{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 @keyframes auraPulse{0%,100%{opacity:.3;filter:blur(35px)}50%{opacity:.6;filter:blur(50px)}}
 
+/* Blur dynamic background */
+.blur-bg{
+  position:absolute;inset:0;
+  filter:blur(120px);
+  background:radial-gradient(circle at center, rgba(0,0,0,0.6), #000);
+  z-index:0;
+  opacity:0.6;
+  transition:background 1.5s ease;
+}
+
 /* Dim saat lagu */
 .dim-overlay{position:absolute;inset:0;border-radius:38px;background:rgba(0,0,0,.25);
   opacity:0;transition:opacity .6s ease;pointer-events:none;z-index:3;}
 .dim-overlay.on{opacity:.45;}
 
-/* Logout */
-.logout-btn{position:fixed;top:20px;left:20px;background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.2);color:#fff;padding:8px 14px;border-radius:12px;
-  font-size:.9rem;cursor:pointer;backdrop-filter:blur(10px);z-index:10;transition:.3s;}
-.logout-btn:hover{background:rgba(255,255,255,.1);}
+/* Logout & Change Account */
+.logout-btn,.change-btn{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);color:#fff;
+  padding:8px 14px;border-radius:12px;font-size:.9rem;cursor:pointer;backdrop-filter:blur(10px);
+  z-index:10;transition:.3s;
+}
+.logout-btn:hover,.change-btn:hover{background:rgba(255,255,255,.1);}
+.logout-btn{position:fixed;top:20px;left:20px;}
+.change-btn{margin-top:12px;}
 
 /* Content */
 .content{position:absolute;inset:0;padding:64px 24px 100px;display:flex;flex-direction:column;
@@ -71,8 +85,7 @@ body{
 
 /* Now Playing */
 .np{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:10px;}
-.np-cover{width:260px;height:260px;border-radius:22px;object-fit:cover;box-shadow:0 20px 60px rgba(0,0,0,.6);
-  transition:transform .2s ease,box-shadow .2s ease;}
+.np-cover{width:260px;height:260px;border-radius:22px;object-fit:cover;box-shadow:0 20px 60px rgba(0,0,0,.6);}
 .np-title{font-size:1.25rem;font-weight:800;}
 .np-artist{opacity:.75;}
 
@@ -91,12 +104,14 @@ body{
 </div>
 
 <div class="frame" id="frame">
+  <div class="blur-bg" id="blurBg"></div>
   <div class="dim-overlay" id="dim"></div>
   <button id="logoutBtn" class="logout-btn" style="display:none;">Log Out</button>
 
   <div class="content" id="content">
     <h2 class="title" id="sectionTitle">Connect your Spotify</h2>
     <button id="connectSpotify" class="connect-btn">Connect Spotify</button>
+    <button id="changeAccount" class="change-btn">Change Account</button>
     <div id="playlistGrid" class="grid" style="display:none;"></div>
     <div id="nowPlaying" class="np" style="display:none;">
       <img id="npCover" class="np-cover" src="" alt="">
@@ -130,17 +145,21 @@ const REDIRECT_URI="https://inteligence-music-gravi.vercel.app/";
 const SCOPES="user-read-currently-playing user-read-playback-state playlist-read-private user-library-read";
 const saveT=t=>localStorage.setItem('spotify_token',t),getT=()=>localStorage.getItem('spotify_token');
 const connectBtn=document.getElementById('connectSpotify');
+const changeBtn=document.getElementById('changeAccount');
 const logoutBtn=document.getElementById('logoutBtn');
 const grid=document.getElementById('playlistGrid');
 const np=document.getElementById('nowPlaying');
 const npC=document.getElementById('npCover'),npT=document.getElementById('npTitle'),npA=document.getElementById('npArtist');
-const dim=document.getElementById('dim');
+const dim=document.getElementById('dim'),blurBg=document.getElementById('blurBg');
 const url=new URLSearchParams(location.search),code=url.get('code');
 
 if(!code){
   const t=getT();
   if(t)onReady(t);
-  else connectBtn.onclick=()=>{playUISound();location.href=`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`;}
+  else{
+    connectBtn.onclick=()=>{playUISound();location.href=`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`;}
+    changeBtn.onclick=()=>{playUISound();localStorage.removeItem('spotify_token');location.reload();}
+  }
 }else{
   fetch(`/api/token?code=${code}`).then(r=>r.json()).then(d=>{
     saveT(d.access_token);history.replaceState({},document.title,location.pathname);onReady(d.access_token);
@@ -149,6 +168,7 @@ if(!code){
 
 function onReady(token){
   connectBtn.style.display='none';
+  changeBtn.style.display='none';
   logoutBtn.style.display='block';
   loadPlaylists(token);
   pollNowPlaying(token);
@@ -189,15 +209,7 @@ async function pollNowPlaying(t){
   }catch(e){}
 }
 
-/* Motion / Apple Vision style */
-document.addEventListener('mousemove',e=>{
-  const x=(e.clientX/window.innerWidth-0.5)*10;
-  const y=(e.clientY/window.innerHeight-0.5)*10;
-  npC.style.transform=`rotateY(${x}deg) rotateX(${y}deg) scale(1.05)`;
-});
-document.addEventListener('mouseleave',()=>npC.style.transform='rotateY(0) rotateX(0) scale(1)');
-
-/* Aura color */
+/* Aura color with animated blur */
 function adaptAura(u){
   const i=new Image();i.crossOrigin='anonymous';i.src=u;
   i.onload=()=>{const c=document.createElement('canvas'),x=c.getContext('2d',{willReadFrequently:true});
@@ -205,7 +217,8 @@ function adaptAura(u){
   const dt=x.getImageData(0,0,64,64).data;let r=0,g=0,b=0,cnt=0;
   for(let k=0;k<dt.length;k+=4){r+=dt[k];g+=dt[k+1];b+=dt[k+2];cnt++;}
   r=Math.round(r/cnt);g=Math.round(g/cnt);b=Math.round(b/cnt);
-  document.body.style.background=`radial-gradient(circle at center, rgba(${r},${g},${b},0.28) 0%, #000 70%)`;
+  const gradient=`radial-gradient(circle at center, rgba(${r},${g},${b},0.45), #000 90%)`;
+  blurBg.style.background=gradient;
   frame.style.setProperty('--m-blue',`rgb(${Math.min(255,r+40)},${Math.max(0,g-10)},${Math.min(255,b+80)})`);
   frame.style.setProperty('--m-purple',`rgb(${Math.min(255,r+120)},${Math.max(0,g)},${Math.min(255,b+160)})`);
   };
