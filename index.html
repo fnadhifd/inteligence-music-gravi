@@ -1,314 +1,172 @@
 <!doctype html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>GRAVI AI × BMW M – Apple Intelligence Aura Frame</title>
-  <style>
-    :root {
-      --m-blue: #007bff;
-      --m-darkblue: #002bff;
-      --m-red: #ff003c;
-      --m-purple: #a000ff;
-      --gravi-cyan: #00fff2;
-      --gravi-white: #cce6ff;
-    }
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>GRAVI AI × BMW M – Intelligence Music Frame</title>
+<style>
+:root{
+  --m-blue:#007bff;--m-darkblue:#002bff;--m-red:#ff003c;
+  --m-purple:#a000ff;--gravi-cyan:#00fff2;--gravi-white:#e6f4ff;
+}
+body{
+  margin:0;background:#000;display:flex;justify-content:center;align-items:center;
+  height:100vh;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#fff;
+}
 
-    body {
-      margin: 0;
-      background: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      color: white;
-    }
+/* Intro */
+.intro{position:absolute;inset:0;background:#000;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;text-align:center;transition:opacity 2s ease;z-index:6;}
+.intro h1{font-size:2rem;letter-spacing:1px;background:linear-gradient(90deg,var(--gravi-cyan),var(--m-blue),var(--m-purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;opacity:0;animation:fadeInText 3s ease forwards;}
+.start-btn{margin-top:20px;background:linear-gradient(90deg,var(--m-blue),var(--m-purple));border:none;color:#fff;font-size:1rem;
+  font-weight:600;padding:12px 28px;border-radius:16px;cursor:pointer;opacity:0;animation:fadeInButton 4s ease forwards;
+  box-shadow:0 0 20px rgba(0,200,255,.4);transition:transform .3s,box-shadow .3s;}
+.start-btn:hover{transform:scale(1.05);box-shadow:0 0 35px rgba(0,200,255,.7);}
+@keyframes fadeInText{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes fadeInButton{0%{opacity:0;transform:translateY(40px)}100%{opacity:1;transform:translateY(0)}}
 
-    /* INTRO */
-    .intro {
-      position: absolute;
-      inset: 0;
-      background: #000;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      transition: opacity 2s ease;
-      z-index: 5;
-    }
+/* Frame aura */
+.frame{position:relative;width:100vw;height:100vh;border-radius:38px;background:#000;overflow:hidden;opacity:0;transition:opacity 2s ease;}
+.frame::before{content:'';position:absolute;inset:0;border-radius:38px;padding:6px;
+  background:linear-gradient(120deg,var(--m-blue),var(--m-purple),var(--gravi-cyan),var(--m-red),var(--m-darkblue));
+  background-size:400% 400%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;filter:blur(6px);animation:appleAura 10s ease-in-out infinite;}
+.rgb::before{animation:rgbAura 4s ease-in-out infinite;}
+.frame::after{content:'';position:absolute;inset:-10px;border-radius:48px;
+  background:linear-gradient(120deg,var(--m-blue),var(--m-purple),var(--m-red),var(--gravi-cyan),var(--m-darkblue));
+  background-size:300% 300%;filter:blur(40px);opacity:.35;animation:auraPulse 6s ease-in-out infinite;z-index:-1;}
+@keyframes appleAura{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes rgbAura{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes auraPulse{0%,100%{opacity:.3;filter:blur(35px)}50%{opacity:.6;filter:blur(50px)}}
 
-    .intro h1 {
-      font-size: 2rem;
-      letter-spacing: 1px;
-      background: linear-gradient(90deg, var(--gravi-cyan), var(--m-blue), var(--m-purple));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      opacity: 0;
-      animation: fadeInText 3s ease forwards;
-    }
+/* Dim saat lagu */
+.dim-overlay{position:absolute;inset:0;border-radius:38px;background:rgba(0,0,0,.25);
+  opacity:0;transition:opacity .6s ease;pointer-events:none;z-index:3;}
+.dim-overlay.on{opacity:.45;}
 
-    .start-btn {
-      margin-top: 20px;
-      background: linear-gradient(90deg, var(--m-blue), var(--m-purple));
-      border: none;
-      color: white;
-      font-size: 1rem;
-      font-weight: 600;
-      padding: 12px 28px;
-      border-radius: 16px;
-      cursor: pointer;
-      opacity: 0;
-      animation: fadeInButton 4s ease forwards;
-      box-shadow: 0 0 20px rgba(0, 200, 255, 0.4);
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
+/* Content */
+.content{position:absolute;inset:0;padding:64px 24px 100px;display:flex;flex-direction:column;
+  align-items:center;gap:24px;z-index:4;overflow:auto;}
+.title{font-weight:700;opacity:.9}
 
-    .start-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 35px rgba(0, 200, 255, 0.7);
-    }
+/* Connect */
+.connect-btn{background:linear-gradient(90deg,#1db954,#1ed760);border:none;padding:12px 28px;border-radius:16px;
+  font-weight:700;color:#fff;cursor:pointer;box-shadow:0 0 25px rgba(30,215,96,.4);transition:.3s;}
+.connect-btn:hover{box-shadow:0 0 40px rgba(30,215,96,.8);}
 
-    @keyframes fadeInText {
-      0% {opacity: 0; transform: translateY(20px);}
-      100% {opacity: 1; transform: translateY(0);}
-    }
+/* Playlist grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:18px;width:min(900px,92vw);}
+.card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:14px;
+  transition:transform .25s,box-shadow .25s;backdrop-filter:blur(8px);}
+.card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 10px 30px rgba(0,0,0,.45);}
+.thumb{width:100%;aspect-ratio:1/1;border-radius:16px;object-fit:cover;box-shadow:0 8px 24px rgba(0,0,0,.35);}
+.label{margin-top:10px;font-weight:600;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
 
-    @keyframes fadeInButton {
-      0% {opacity: 0; transform: translateY(40px);}
-      100% {opacity: 1; transform: translateY(0);}
-    }
+/* Tracks */
+.tracks{width:min(820px,92vw);display:flex;flex-direction:column;gap:8px;}
+.track{display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:background .2s;}
+.track:hover{background:rgba(255,255,255,.08);}
+.tcover{width:48px;height:48px;border-radius:8px;object-fit:cover;}
+.tmeta{display:flex;flex-direction:column;}
+.tname{font-weight:600;}
+.tartist{font-size:.9rem;opacity:.7;}
 
-    /* FRAME AURA */
-    .frame {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      border-radius: 38px;
-      background: #000;
-      overflow: hidden;
-      opacity: 0;
-      transition: opacity 2s ease;
-    }
+/* Now playing */
+.np{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:10px;}
+.np-cover{width:260px;height:260px;border-radius:22px;object-fit:cover;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+.np-title{font-size:1.25rem;font-weight:800;}
+.np-artist{opacity:.75;}
 
-    .frame::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 38px;
-      padding: 6px;
-      background: linear-gradient(120deg, var(--m-blue), var(--m-purple), var(--gravi-cyan), var(--m-red), var(--m-darkblue));
-      background-size: 400% 400%;
-      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      filter: blur(6px);
-      animation: appleAura 10s ease-in-out infinite;
-    }
-
-    .rgb::before {
-      animation: rgbAura 4s ease-in-out infinite;
-    }
-
-    .frame::after {
-      content: '';
-      position: absolute;
-      inset: -10px;
-      border-radius: 48px;
-      background: linear-gradient(120deg, var(--m-blue), var(--m-purple), var(--m-red), var(--gravi-cyan), var(--m-darkblue));
-      background-size: 300% 300%;
-      filter: blur(40px);
-      opacity: 0.35;
-      animation: auraPulse 6s ease-in-out infinite;
-      z-index: -1;
-    }
-
-    @keyframes appleAura {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    @keyframes rgbAura {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    @keyframes auraPulse {
-      0%,100% { opacity: 0.3; filter: blur(35px); }
-      50% { opacity: 0.6; filter: blur(50px); }
-    }
-
-    /* BUTTONS */
-    .buttons {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 10px;
-      z-index: 10;
-    }
-
-    button {
-      background: rgba(30, 30, 30, 0.8);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 10px 18px;
-      border-radius: 12px;
-      cursor: pointer;
-      backdrop-filter: blur(10px);
-      font-weight: 600;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    /* SPOTIFY SECTION */
-    .spotify {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      color: white;
-    }
-
-    .cover {
-      width: 200px;
-      height: 200px;
-      border-radius: 16px;
-      box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
-      margin-bottom: 20px;
-    }
-
-    .connect-btn {
-      margin-top: 10px;
-      background: linear-gradient(90deg, #1db954, #1ed760);
-      border: none;
-      padding: 12px 28px;
-      border-radius: 16px;
-      font-weight: bold;
-      color: white;
-      cursor: pointer;
-      box-shadow: 0 0 25px rgba(30, 215, 96, 0.4);
-      transition: 0.3s;
-    }
-
-    .connect-btn:hover {
-      box-shadow: 0 0 40px rgba(30, 215, 96, 0.8);
-    }
-  </style>
+/* Buttons bawah */
+.buttons{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:5;}
+.btn{background:rgba(30,30,30,.85);color:#fff;border:1px solid rgba(255,255,255,.2);
+  padding:10px 18px;border-radius:12px;cursor:pointer;backdrop-filter:blur(10px);font-weight:600;transition:.3s;}
+.btn:hover{background:rgba(255,255,255,.1);}
+</style>
 </head>
 <body>
 
-  <div class="intro" id="intro">
-    <h1>Welcome to GRAVI AI Experience</h1>
-    <button class="start-btn" id="startBtn">Start Experience</button>
-  </div>
+<div class="intro" id="intro">
+  <h1>Welcome to GRAVI AI Experience</h1>
+  <button class="start-btn" id="startBtn">Start Experience</button>
+</div>
 
-  <div class="frame" id="frame">
-    <div class="spotify" id="spotify">
-      <img id="cover" class="cover" src="" alt="Album cover" style="display:none;">
-      <h2 id="song"></h2>
-      <h3 id="artist"></h3>
-      <button id="connectSpotify" class="connect-btn">Connect Spotify</button>
+<div class="frame" id="frame">
+  <div class="dim-overlay" id="dim"></div>
+  <div class="content" id="content">
+    <h2 class="title" id="sectionTitle">Connect your Spotify</h2>
+    <button id="connectSpotify" class="connect-btn">Connect Spotify</button>
+    <div id="playlistGrid" class="grid" style="display:none;"></div>
+    <div id="tracksWrap" style="display:none;flex-direction:column;align-items:center;gap:16px;">
+      <button id="backToPlaylists" class="btn" style="align-self:flex-start;">← Back</button>
+      <div id="tracks" class="tracks"></div>
+    </div>
+    <div id="nowPlaying" class="np" style="display:none;">
+      <img id="npCover" class="np-cover" src="" alt="">
+      <div class="np-title" id="npTitle"></div>
+      <div class="np-artist" id="npArtist"></div>
     </div>
   </div>
+</div>
 
-  <div class="buttons" id="buttons">
-    <button id="appleBtn">Apple Flow</button>
-    <button id="rgbBtn">RGB Live</button>
-  </div>
+<div class="buttons">
+  <button id="appleBtn" class="btn">Apple Flow</button>
+  <button id="rgbBtn" class="btn">RGB Live</button>
+</div>
 
-  <audio id="introSound" src="audio/intro.mp3"></audio>
+<script>
+/* UI SOUND */
+const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+let uiBuffer;
+fetch('audio/intro.mp3').then(r=>r.arrayBuffer()).then(b=>audioCtx.decodeAudioData(b)).then(d=>uiBuffer=d);
+function playUISound(v=0.3){if(!uiBuffer)return;const src=audioCtx.createBufferSource();const g=audioCtx.createGain();g.gain.value=v;src.buffer=uiBuffer;src.connect(g).connect(audioCtx.destination);src.start(0);}
 
-  <script>
-    const CLIENT_ID = "a4c46dd220374fc586a40f8450993f5a";
-    const REDIRECT_URI = "https://inteligence-music-gravi.vercel.app/";
-    const introSound = document.getElementById('introSound');
-    const spotifyDiv = document.getElementById('spotify');
-    const frame = document.getElementById('frame');
-    const connectSpotify = document.getElementById('connectSpotify');
+/* INTRO */
+const intro=document.getElementById('intro'),frame=document.getElementById('frame');
+document.getElementById('startBtn').onclick=()=>{audioCtx.resume();playUISound();intro.style.opacity='0';setTimeout(()=>{intro.style.display='none';frame.style.opacity='1';},2000);}
+document.getElementById('appleBtn').onclick=()=>{playUISound();frame.classList.remove('rgb');}
+document.getElementById('rgbBtn').onclick=()=>{playUISound();frame.classList.add('rgb');}
 
-    // ----- INTRO -----
-    document.getElementById('buttons').style.display = 'none';
-    document.getElementById('startBtn').addEventListener('click', () => {
-      introSound.currentTime = 0;
-      introSound.play();
-      document.getElementById('intro').style.opacity = '0';
-      setTimeout(() => {
-        document.getElementById('intro').style.display = 'none';
-        frame.style.opacity = '1';
-        document.getElementById('buttons').style.display = 'flex';
-      }, 2000);
-    });
+/* SPOTIFY */
+const CLIENT_ID="a4c46dd220374fc586a40f8450993f5a";
+const REDIRECT_URI="https://inteligence-music-gravi.vercel.app/";
+const SCOPES="user-read-currently-playing user-read-playback-state playlist-read-private user-library-read";
+const saveT=t=>localStorage.setItem('spotify_token',t),getT=()=>localStorage.getItem('spotify_token');
+const connectBtn=document.getElementById('connectSpotify'),grid=document.getElementById('playlistGrid');
+const tracksWrap=document.getElementById('tracksWrap'),tracks=document.getElementById('tracks');
+const backBtn=document.getElementById('backToPlaylists'),sectionTitle=document.getElementById('sectionTitle');
+const np=document.getElementById('nowPlaying'),npC=document.getElementById('npCover'),npT=document.getElementById('npTitle'),npA=document.getElementById('npArtist'),dim=document.getElementById('dim');
+const url=new URLSearchParams(location.search),code=url.get('code');
+if(!code){const t=getT();if(t)onReady(t);else connectBtn.onclick=()=>{playUISound();location.href=`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`}}
+else{fetch(`/api/token?code=${code}`).then(r=>r.json()).then(d=>{saveT(d.access_token);history.replaceState({},document.title,location.pathname);onReady(d.access_token);});}
 
-    // ----- FRAME MODES -----
-    document.getElementById('appleBtn').addEventListener('click', () => {
-      introSound.currentTime = 0;
-      introSound.play();
-      frame.classList.remove('rgb');
-    });
-    document.getElementById('rgbBtn').addEventListener('click', () => {
-      introSound.currentTime = 0;
-      introSound.play();
-      frame.classList.add('rgb');
-    });
+function onReady(token){connectBtn.style.display='none';sectionTitle.textContent="Your Playlists";grid.style.display='grid';loadPlaylists(token);pollNowPlaying(token);setInterval(()=>pollNowPlaying(token),8000);}
+async function loadPlaylists(t){grid.innerHTML="";grid.appendChild(makeCard({id:'__liked__',name:'Liked Songs',images:[{url:'https://i.imgur.com/0Z8FQpT.png'}]}));
+const r=await fetch(`https://api.spotify.com/v1/me/playlists?limit=50`,{headers:{Authorization:`Bearer ${t}`}});if(!r.ok)return;const d=await r.json();d.items.forEach(p=>grid.appendChild(makeCard(p)));}
+function makeCard(p){const c=document.createElement('div');c.className='card';c.onclick=()=>{playUISound();openPL(p.id,p.name);}
+const img=document.createElement('img');img.className='thumb';img.src=p.images&&p.images[0]?p.images[0].url:'https://i.imgur.com/0Z8FQpT.png';
+const lab=document.createElement('div');lab.className='label';lab.textContent=p.name||'Playlist';c.append(img,lab);return c;}
+async function openPL(id,name){sectionTitle.textContent=name;grid.style.display='none';tracksWrap.style.display='flex';tracks.innerHTML="<div style='opacity:.7'>Loading tracks…</div>";
+const t=getT();const url=id==='__liked__'?`https://api.spotify.com/v1/me/tracks?limit=50`:`https://api.spotify.com/v1/playlists/${id}/tracks?limit=100`;
+const r=await fetch(url,{headers:{Authorization:`Bearer ${t}`}}),d=await r.json();renderTracks(id==='__liked__'?d.items.map(i=>i.track):d.items.map(i=>i.track));}
+function renderTracks(a){tracks.innerHTML="";a.forEach(t=>{if(!t)return;const r=document.createElement('div');r.className='track';r.onclick=()=>{playUISound(.2);if(t.external_urls?.spotify)open(t.external_urls.spotify,'_blank');};
+const img=document.createElement('img');img.className='tcover';img.src=t.album?.images?.[2]?.url||t.album?.images?.[0]?.url||'';const m=document.createElement('div');m.className='tmeta';
+const n=document.createElement('div');n.className='tname';n.textContent=t.name;const ar=document.createElement('div');ar.className='tartist';ar.textContent=(t.artists||[]).map(a=>a.name).join(', ');
+m.append(n,ar);r.append(img,m);tracks.append(r);});}
+backBtn.onclick=()=>{playUISound();tracksWrap.style.display='none';grid.style.display='grid';sectionTitle.textContent="Your Playlists";}
 
-    // ----- SPOTIFY LOGIN -----
-    const hash = window.location.hash.substring(1);
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-
-    if (!code) {
-      connectSpotify.onclick = () => {
-        const scope = "user-read-currently-playing user-read-playback-state";
-        window.location.href = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}&scope=${scope}`;
-      };
-    } else {
-      fetch(`/api/token?code=${code}`)
-        .then(res => res.json())
-        .then(data => {
-          const access_token = data.access_token;
-          connectSpotify.style.display = 'none';
-          getNowPlaying(access_token);
-          setInterval(() => getNowPlaying(access_token), 10000);
-        });
-    }
-
-    function getNowPlaying(token) {
-      fetch("https://api.spotify.com/v1/me/player/currently-playing", {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.item) {
-          const song = data.item.name;
-          const artist = data.item.artists.map(a => a.name).join(", ");
-          const cover = data.item.album.images[0].url;
-
-          document.getElementById('cover').src = cover;
-          document.getElementById('cover').style.display = 'block';
-          document.getElementById('song').innerText = song;
-          document.getElementById('artist').innerText = artist;
-
-          // adapt aura warna
-          frame.style.setProperty('--m-blue', averageColor(cover).vibrant || '#007bff');
-        }
-      });
-    }
-
-    // ambil warna dominan (dummy sederhana)
-    function averageColor(imgUrl) {
-      const color = { vibrant: '#1db954' };
-      return color;
-    }
-  </script>
+/* Now Playing */
+async function pollNowPlaying(t){try{const r=await fetch(`https://api.spotify.com/v1/me/player/currently-playing`,{headers:{Authorization:`Bearer ${t}`}});if(r.status===204){dim.classList.remove('on');np.style.display='none';return;}
+const d=await r.json();if(!d?.item)return;const c=d.item.album.images[0].url;npC.src=c;npT.textContent=d.item.name;npA.textContent=d.item.artists.map(a=>a.name).join(', ');np.style.display='flex';adaptAura(c);dim.classList.add('on');}catch(e){}}
+function adaptAura(u){const i=new Image();i.crossOrigin='anonymous';i.src=u;i.onload=()=>{const c=document.createElement('canvas'),x=c.getContext('2d',{willReadFrequently:true});c.width=64;c.height=64;x.drawImage(i,0,0,64,64);
+const dt=x.getImageData(0,0,64,64).data;let r=0,g=0,b=0,cnt=0;for(let k=0;k<dt.length;k+=4){r+=dt[k];g+=dt[k+1];b+=dt[k+2];cnt++;}r=Math.round(r/cnt);g=Math.round(g/cnt);b=Math.round(b/cnt);
+document.body.style.background=`radial-gradient(circle at center, rgba(${r},${g},${b},0.28) 0%, #000 70%)`;
+frame.style.setProperty('--m-blue',`rgb(${Math.min(255,r+40)},${Math.max(0,g-10)},${Math.min(255,b+80)})`);
+frame.style.setProperty('--m-purple',`rgb(${Math.min(255,r+120)},${Math.max(0,g)},${Math.min(255,b+160)})`);
+};
+}
+</script>
 </body>
 </html>
