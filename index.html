@@ -41,16 +41,10 @@ body{
 @keyframes auraPulse{0%,100%{opacity:.3;filter:blur(35px)}50%{opacity:.6;filter:blur(50px)}}
 
 /* Animated Blur Background */
-.blur-bg{
-  position:absolute;inset:0;filter:blur(180px);
+.blur-bg{position:absolute;inset:0;filter:blur(180px);
   background:radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000);
-  z-index:1;transition:background 1.2s ease;
-  animation:mistShift 10s infinite alternate ease-in-out;
-}
-@keyframes mistShift{
-  0%{transform:scale(1.05) translate(10px,10px);}
-  100%{transform:scale(1.1) translate(-10px,-10px);}
-}
+  z-index:1;transition:background 1.2s ease;animation:mistShift 10s infinite alternate ease-in-out;}
+@keyframes mistShift{0%{transform:scale(1.05) translate(10px,10px);}100%{transform:scale(1.1) translate(-10px,-10px);}}
 
 /* Overlay */
 .dim-overlay{position:absolute;inset:0;border-radius:38px;background:rgba(0,0,0,.25);
@@ -58,11 +52,9 @@ body{
 .dim-overlay.on{opacity:.45;}
 
 /* Buttons */
-.logout-btn,.change-btn{
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);color:#fff;
+.logout-btn,.change-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);color:#fff;
   padding:8px 14px;border-radius:12px;font-size:.9rem;cursor:pointer;backdrop-filter:blur(10px);
-  z-index:20;transition:.3s;margin-right:10px;
-}
+  z-index:20;transition:.3s;margin-right:10px;}
 .logout-btn:hover,.change-btn:hover{background:rgba(255,255,255,.1);}
 .top-buttons{position:fixed;top:20px;left:20px;display:flex;z-index:30;}
 
@@ -81,6 +73,23 @@ body{
 .card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 10px 30px rgba(0,0,0,.45);}
 .thumb{width:100%;aspect-ratio:1/1;border-radius:16px;object-fit:cover;box-shadow:0 8px 24px rgba(0,0,0,.35);}
 .label{margin-top:10px;font-weight:600;opacity:.9;text-align:center;}
+
+/* Playlist view + search */
+.playlist-view{display:none;flex-direction:column;align-items:center;width:100%;animation:fadeInView .8s ease forwards;}
+@keyframes fadeInView{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.search-bar{width:min(500px,90%);padding:10px 16px;border:none;border-radius:16px;margin-bottom:20px;
+  background:rgba(255,255,255,.08);color:white;backdrop-filter:blur(8px);font-size:1rem;outline:none;}
+.song-list{display:flex;flex-direction:column;gap:10px;width:min(700px,92vw);}
+.song-item{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.05);padding:10px 14px;
+  border-radius:14px;backdrop-filter:blur(8px);cursor:pointer;transition:background .3s,transform .2s;}
+.song-item:hover{background:rgba(255,255,255,.12);transform:scale(1.02);}
+.song-cover{width:50px;height:50px;border-radius:10px;object-fit:cover;}
+.song-info{flex:1;}
+.song-title{font-weight:600;}
+.song-artist{font-size:.85rem;opacity:.7;}
+.back-btn{background:rgba(255,255,255,.08);border:none;color:white;padding:10px 18px;border-radius:12px;
+  margin-bottom:20px;cursor:pointer;backdrop-filter:blur(8px);font-weight:600;transition:.3s;}
+.back-btn:hover{background:rgba(255,255,255,.15);}
 
 /* Now Playing */
 .np{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:10px;}
@@ -115,6 +124,13 @@ body{
     <h2 class="title" id="sectionTitle">Connect your Spotify</h2>
     <button id="connectSpotify" class="connect-btn">Connect Spotify</button>
     <div id="playlistGrid" class="grid" style="display:none;"></div>
+
+    <div id="playlistView" class="playlist-view">
+      <button id="backBtn" class="back-btn">⬅ Kembali</button>
+      <input id="searchBar" class="search-bar" type="text" placeholder="Cari lagu di playlist ini..."/>
+      <div id="songList" class="song-list"></div>
+    </div>
+
     <div id="nowPlaying" class="np" style="display:none;">
       <img id="npCover" class="np-cover" src="" alt="">
       <div class="np-title" id="npTitle"></div>
@@ -151,9 +167,14 @@ const logoutBtn=document.getElementById('logoutBtn');
 const changeBtn=document.getElementById('changeAccount');
 const topButtons=document.getElementById('topButtons');
 const grid=document.getElementById('playlistGrid');
+const playlistView=document.getElementById('playlistView');
+const backBtn=document.getElementById('backBtn');
+const searchBar=document.getElementById('searchBar');
+const songList=document.getElementById('songList');
 const np=document.getElementById('nowPlaying');
 const npC=document.getElementById('npCover'),npT=document.getElementById('npTitle'),npA=document.getElementById('npArtist');
 const dim=document.getElementById('dim'),blurBg=document.getElementById('blurBg');
+let audioPreview=new Audio();
 const url=new URLSearchParams(location.search),code=url.get('code');
 
 if(!code){
@@ -181,13 +202,10 @@ logoutBtn.onclick=()=>{playUISound();localStorage.removeItem('spotify_token');lo
 changeBtn.onclick = () => {
   playUISound();
   localStorage.removeItem('spotify_token');
-
-  // Arahkan ke halaman login Spotify (bisa ganti akun)
   const authURL = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
     `&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
     `&scope=${encodeURIComponent(SCOPES)}` +
-    `&show_dialog=true`; // Spotify akan paksa tampilkan dialog login
-
+    `&show_dialog=true`;
   window.location.href = authURL;
 };
 
@@ -204,7 +222,7 @@ async function loadPlaylists(t){
 function makeCard(p){
   const c=document.createElement('div');
   c.className='card';
-  c.onclick=()=>{playUISound();if(p.external_urls?.spotify)open(p.external_urls.spotify,'_blank');};
+  c.onclick=()=>{playUISound();openPlaylist(p);};
   const img=document.createElement('img');
   img.className='thumb';
   img.src=p.images&&p.images[0]?p.images[0].url:'https://i.imgur.com/0Z8FQpT.png';
@@ -212,7 +230,78 @@ function makeCard(p){
   c.append(img,lab);return c;
 }
 
-/* Now Playing */
+/* Open playlist view */
+async function openPlaylist(p){
+  grid.style.display='none';
+  playlistView.style.display='flex';
+  document.getElementById('sectionTitle').textContent=p.name;
+  const token=getT();
+  const r=await fetch(p.tracks.href,{headers:{Authorization:`Bearer ${token}`}});
+  if(!r.ok)return;
+  const d=await r.json();
+  renderSongs(d.items);
+}
+
+/* Render songs */
+function renderSongs(items){
+  songList.innerHTML='';
+  items.forEach(i=>{
+    const t=i.track;if(!t)return;
+    const div=document.createElement('div');
+    div.className='song-item';
+    const img=document.createElement('img');
+    img.src=t.album.images[0]?.url||'';
+    img.className='song-cover';
+    const info=document.createElement('div');
+    info.className='song-info';
+    const title=document.createElement('div');
+    title.className='song-title';
+    title.textContent=t.name;
+    const artist=document.createElement('div');
+    artist.className='song-artist';
+    artist.textContent=t.artists.map(a=>a.name).join(', ');
+    info.append(title,artist);
+    div.append(img,info);
+    div.onclick=()=>playPreview(t);
+    songList.append(div);
+  });
+}
+
+/* Play preview */
+function playPreview(track){
+  playUISound();
+  if(audioPreview)audioPreview.pause();
+  if(track.preview_url){
+    audioPreview.src=track.preview_url;
+    audioPreview.play();
+  }
+  const cover=track.album.images[0]?.url;
+  npC.src=cover;
+  npT.textContent=track.name;
+  npA.textContent=track.artists.map(a=>a.name).join(', ');
+  np.style.display='flex';
+  adaptAura(cover);
+  dim.classList.add('on');
+}
+
+/* Search filter */
+searchBar.addEventListener('input',()=>{
+  const q=searchBar.value.toLowerCase();
+  document.querySelectorAll('.song-item').forEach(it=>{
+    const text=it.textContent.toLowerCase();
+    it.style.display=text.includes(q)?'flex':'none';
+  });
+});
+
+/* Back button */
+backBtn.onclick=()=>{
+  playUISound();
+  playlistView.style.display='none';
+  grid.style.display='grid';
+  document.getElementById('sectionTitle').textContent='Your Playlists';
+};
+
+/* Now Playing (polling) */
 async function pollNowPlaying(t){
   try{
     const r=await fetch(`https://api.spotify.com/v1/me/player/currently-playing`,{headers:{Authorization:`Bearer ${t}`}});
@@ -224,7 +313,7 @@ async function pollNowPlaying(t){
   }catch(e){}
 }
 
-/* Aura adapt + blur fix */
+/* Aura adapt + blur */
 function adaptAura(u){
   const i=new Image();i.crossOrigin='anonymous';i.src=u;
   i.onload=()=>{const c=document.createElement('canvas'),x=c.getContext('2d',{willReadFrequently:true});
