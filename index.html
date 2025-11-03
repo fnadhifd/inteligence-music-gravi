@@ -145,186 +145,278 @@ body{
 </div>
 
 <script>
-/* Intro Sound */
-const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-let uiBuffer;
-fetch('audio/intro.mp3').then(r=>r.arrayBuffer()).then(b=>audioCtx.decodeAudioData(b)).then(d=>uiBuffer=d);
-function playUISound(v=0.3){if(!uiBuffer)return;const src=audioCtx.createBufferSource();const g=audioCtx.createGain();g.gain.value=v;src.buffer=uiBuffer;src.connect(g).connect(audioCtx.destination);src.start(0);}
-
-/* Intro */
-const intro=document.getElementById('intro'),frame=document.getElementById('frame');
-document.getElementById('startBtn').onclick=()=>{audioCtx.resume();playUISound();intro.style.opacity='0';setTimeout(()=>{intro.style.display='none';frame.style.opacity='1';},2000);}
-document.getElementById('appleBtn').onclick=()=>{playUISound();frame.classList.remove('rgb');}
-document.getElementById('rgbBtn').onclick=()=>{playUISound();frame.classList.add('rgb');}
-
-/* Spotify Auth */
-const CLIENT_ID="a4c46dd220374fc586a40f8450993f5a";
-const REDIRECT_URI="https://inteligence-music-gravi.vercel.app/";
-const SCOPES="user-read-currently-playing user-read-playback-state playlist-read-private user-library-read";
-const saveT=t=>localStorage.setItem('spotify_token',t),getT=()=>localStorage.getItem('spotify_token');
-const connectBtn=document.getElementById('connectSpotify');
-const logoutBtn=document.getElementById('logoutBtn');
-const changeBtn=document.getElementById('changeAccount');
-const topButtons=document.getElementById('topButtons');
-const grid=document.getElementById('playlistGrid');
-const playlistView=document.getElementById('playlistView');
-const backBtn=document.getElementById('backBtn');
-const searchBar=document.getElementById('searchBar');
-const songList=document.getElementById('songList');
-const np=document.getElementById('nowPlaying');
-const npC=document.getElementById('npCover'),npT=document.getElementById('npTitle'),npA=document.getElementById('npArtist');
-const dim=document.getElementById('dim'),blurBg=document.getElementById('blurBg');
-let audioPreview=new Audio();
-const url=new URLSearchParams(location.search),code=url.get('code');
-
-if(!code){
-  const t=getT();
-  if(t)onReady(t);
-  else{
-    connectBtn.onclick=()=>{playUISound();location.href=`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`;}
+  /* Intro Sound */
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  let uiBuffer;
+  fetch('audio/intro.mp3')
+    .then(r => r.arrayBuffer())
+    .then(b => audioCtx.decodeAudioData(b))
+    .then(d => (uiBuffer = d));
+  
+  function playUISound(v = 0.3) {
+    if (!uiBuffer) return;
+    const src = audioCtx.createBufferSource();
+    const g = audioCtx.createGain();
+    g.gain.value = v;
+    src.buffer = uiBuffer;
+    src.connect(g).connect(audioCtx.destination);
+    src.start(0);
   }
-}else{
-  fetch(`/api/token?code=${code}`).then(r=>r.json()).then(d=>{
-    saveT(d.access_token);history.replaceState({},document.title,location.pathname);onReady(d.access_token);
-  });
-}
-
-function onReady(token){
-  connectBtn.style.display='none';
-  topButtons.style.display='flex';
-  loadPlaylists(token);
-  pollNowPlaying(token);
-  setInterval(()=>pollNowPlaying(token),8000);
-}
-
-/* Logout & Change Account */
-logoutBtn.onclick=()=>{playUISound();localStorage.removeItem('spotify_token');location.reload();}
-changeBtn.onclick = () => {
-  playUISound();
-  localStorage.removeItem('spotify_token');
-  const authURL = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
-    `&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-    `&scope=${encodeURIComponent(SCOPES)}` +
-    `&show_dialog=true`;
-  window.location.href = authURL;
-};
-
-/* Load playlists */
-async function loadPlaylists(t){
-  grid.style.display='grid';
-  grid.innerHTML="";
-  const r=await fetch(`https://api.spotify.com/v1/me/playlists?limit=50`,{headers:{Authorization:`Bearer ${t}`}});
-  if(!r.ok)return;const d=await r.json();
-  d.items.forEach(p=>grid.appendChild(makeCard(p)));
-}
-
-/* Playlist Card */
-function makeCard(p){
-  const c=document.createElement('div');
-  c.className='card';
-  c.onclick=()=>{playUISound();openPlaylist(p);};
-  const img=document.createElement('img');
-  img.className='thumb';
-  img.src=p.images&&p.images[0]?p.images[0].url:'https://i.imgur.com/0Z8FQpT.png';
-  const lab=document.createElement('div');lab.className='label';lab.textContent=p.name||'Playlist';
-  c.append(img,lab);return c;
-}
-
-/* Open playlist view */
-async function openPlaylist(p){
-  grid.style.display='none';
-  playlistView.style.display='flex';
-  document.getElementById('sectionTitle').textContent=p.name;
-  const token=getT();
-  const r=await fetch(p.tracks.href,{headers:{Authorization:`Bearer ${token}`}});
-  if(!r.ok)return;
-  const d=await r.json();
-  renderSongs(d.items);
-}
-
-/* Render songs */
-function renderSongs(items){
-  songList.innerHTML='';
-  items.forEach(i=>{
-    const t=i.track;if(!t)return;
-    const div=document.createElement('div');
-    div.className='song-item';
-    const img=document.createElement('img');
-    img.src=t.album.images[0]?.url||'';
-    img.className='song-cover';
-    const info=document.createElement('div');
-    info.className='song-info';
-    const title=document.createElement('div');
-    title.className='song-title';
-    title.textContent=t.name;
-    const artist=document.createElement('div');
-    artist.className='song-artist';
-    artist.textContent=t.artists.map(a=>a.name).join(', ');
-    info.append(title,artist);
-    div.append(img,info);
-    div.onclick=()=>playPreview(t);
-    songList.append(div);
-  });
-}
-
-/* Play preview */
-function playPreview(track){
-  playUISound();
-  if(audioPreview)audioPreview.pause();
-  if(track.preview_url){
-    audioPreview.src=track.preview_url;
-    audioPreview.play();
-  }
-  const cover=track.album.images[0]?.url;
-  npC.src=cover;
-  npT.textContent=track.name;
-  npA.textContent=track.artists.map(a=>a.name).join(', ');
-  np.style.display='flex';
-  adaptAura(cover);
-  dim.classList.add('on');
-}
-
-/* Search filter */
-searchBar.addEventListener('input',()=>{
-  const q=searchBar.value.toLowerCase();
-  document.querySelectorAll('.song-item').forEach(it=>{
-    const text=it.textContent.toLowerCase();
-    it.style.display=text.includes(q)?'flex':'none';
-  });
-});
-
-/* Back button */
-backBtn.onclick=()=>{
-  playUISound();
-  playlistView.style.display='none';
-  grid.style.display='grid';
-  document.getElementById('sectionTitle').textContent='Your Playlists';
-};
-
-/* Now Playing (polling) */
-async function pollNowPlaying(t){
-  try{
-    const r=await fetch(`https://api.spotify.com/v1/me/player/currently-playing`,{headers:{Authorization:`Bearer ${t}`}});
-    if(r.status===204){dim.classList.remove('on');np.style.display='none';return;}
-    const d=await r.json();if(!d?.item)return;
-    const c=d.item.album.images[0].url;
-    npC.src=c;npT.textContent=d.item.name;npA.textContent=d.item.artists.map(a=>a.name).join(', ');
-    np.style.display='flex';adaptAura(c);dim.classList.add('on');
-  }catch(e){}
-}
-
-/* Aura adapt + blur */
-function adaptAura(u){
-  const i=new Image();i.crossOrigin='anonymous';i.src=u;
-  i.onload=()=>{const c=document.createElement('canvas'),x=c.getContext('2d',{willReadFrequently:true});
-  c.width=64;c.height=64;x.drawImage(i,0,0,64,64);
-  const dt=x.getImageData(0,0,64,64).data;let r=0,g=0,b=0,cnt=0;
-  for(let k=0;k<dt.length;k+=4){r+=dt[k];g+=dt[k+1];b+=dt[k+2];cnt++;}
-  r=Math.round(r/cnt);g=Math.round(g/cnt);b=Math.round(b/cnt);
-  const gradient=`radial-gradient(circle at center, rgba(${r},${g},${b},0.55), rgba(0,0,0,0.9))`;
-  blurBg.style.background=gradient;
+  
+  /* Intro */
+  const intro = document.getElementById('intro'),
+    frame = document.getElementById('frame'),
+    bottomBtns = document.getElementById('bottomBtns'); // ⬅️ Tambahkan ini
+  
+  document.getElementById('startBtn').onclick = () => {
+    audioCtx.resume();
+    playUISound();
+    intro.style.opacity = '0';
+    setTimeout(() => {
+      intro.style.display = 'none';
+      frame.style.opacity = '1';
+      bottomBtns.style.display = 'flex'; // ⬅️ Tombol baru muncul setelah start
+    }, 2000);
   };
-}
-</script>
-</body>
-</html>
+  
+  document.getElementById('appleBtn').onclick = () => {
+    playUISound();
+    frame.classList.remove('rgb');
+  };
+  
+  document.getElementById('rgbBtn').onclick = () => {
+    playUISound();
+    frame.classList.add('rgb');
+  };
+  
+  /* Spotify Auth */
+  const CLIENT_ID = "a4c46dd220374fc586a40f8450993f5a";
+  const REDIRECT_URI = "https://inteligence-music-gravi.vercel.app/";
+  const SCOPES = "user-read-currently-playing user-read-playback-state playlist-read-private user-library-read";
+  const saveT = t => localStorage.setItem('spotify_token', t),
+    getT = () => localStorage.getItem('spotify_token');
+  
+  const connectBtn = document.getElementById('connectSpotify');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const changeBtn = document.getElementById('changeAccount');
+  const topButtons = document.getElementById('topButtons');
+  const grid = document.getElementById('playlistGrid');
+  const playlistView = document.getElementById('playlistView');
+  const backBtn = document.getElementById('backBtn');
+  const searchBar = document.getElementById('searchBar');
+  const songList = document.getElementById('songList');
+  const np = document.getElementById('nowPlaying');
+  const npC = document.getElementById('npCover'),
+    npT = document.getElementById('npTitle'),
+    npA = document.getElementById('npArtist');
+  const dim = document.getElementById('dim'),
+    blurBg = document.getElementById('blurBg');
+  let audioPreview = new Audio();
+  const url = new URLSearchParams(location.search),
+    code = url.get('code');
+  
+  if (!code) {
+    const t = getT();
+    if (t) onReady(t);
+    else {
+      connectBtn.onclick = () => {
+        playUISound();
+        location.href = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(
+          REDIRECT_URI
+        )}&scope=${encodeURIComponent(SCOPES)}`;
+      };
+    }
+  } else {
+    fetch(`/api/token?code=${code}`)
+      .then(r => r.json())
+      .then(d => {
+        saveT(d.access_token);
+        history.replaceState({}, document.title, location.pathname);
+        onReady(d.access_token);
+      });
+  }
+  
+  function onReady(token) {
+    connectBtn.style.display = 'none';
+    topButtons.style.display = 'flex';
+    loadPlaylists(token);
+    pollNowPlaying(token);
+    setInterval(() => pollNowPlaying(token), 8000);
+  }
+  
+  /* Logout & Change Account */
+  logoutBtn.onclick = () => {
+    playUISound();
+    localStorage.removeItem('spotify_token');
+    location.reload();
+  };
+  
+  changeBtn.onclick = () => {
+    playUISound();
+    localStorage.removeItem('spotify_token');
+    const authURL =
+      `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
+      `&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
+      `&scope=${encodeURIComponent(SCOPES)}` +
+      `&show_dialog=true`;
+    window.location.href = authURL;
+  };
+  
+  /* Load playlists */
+  async function loadPlaylists(t) {
+    grid.style.display = 'grid';
+    grid.innerHTML = "";
+    const r = await fetch(`https://api.spotify.com/v1/me/playlists?limit=50`, {
+      headers: { Authorization: `Bearer ${t}` },
+    });
+    if (!r.ok) return;
+    const d = await r.json();
+    d.items.forEach(p => grid.appendChild(makeCard(p)));
+  }
+  
+  /* Playlist Card */
+  function makeCard(p) {
+    const c = document.createElement('div');
+    c.className = 'card';
+    c.onclick = () => {
+      playUISound();
+      openPlaylist(p);
+    };
+    const img = document.createElement('img');
+    img.className = 'thumb';
+    img.src = p.images && p.images[0] ? p.images[0].url : 'https://i.imgur.com/0Z8FQpT.png';
+    const lab = document.createElement('div');
+    lab.className = 'label';
+    lab.textContent = p.name || 'Playlist';
+    c.append(img, lab);
+    return c;
+  }
+  
+  /* Open playlist view */
+  async function openPlaylist(p) {
+    grid.style.display = 'none';
+    playlistView.style.display = 'flex';
+    document.getElementById('sectionTitle').textContent = p.name;
+    const token = getT();
+    const r = await fetch(p.tracks.href, { headers: { Authorization: `Bearer ${token}` } });
+    if (!r.ok) return;
+    const d = await r.json();
+    renderSongs(d.items);
+  }
+  
+  /* Render songs */
+  function renderSongs(items) {
+    songList.innerHTML = '';
+    items.forEach(i => {
+      const t = i.track;
+      if (!t) return;
+      const div = document.createElement('div');
+      div.className = 'song-item';
+      const img = document.createElement('img');
+      img.src = t.album.images[0]?.url || '';
+      img.className = 'song-cover';
+      const info = document.createElement('div');
+      info.className = 'song-info';
+      const title = document.createElement('div');
+      title.className = 'song-title';
+      title.textContent = t.name;
+      const artist = document.createElement('div');
+      artist.className = 'song-artist';
+      artist.textContent = t.artists.map(a => a.name).join(', ');
+      info.append(title, artist);
+      div.append(img, info);
+      div.onclick = () => playPreview(t);
+      songList.append(div);
+    });
+  }
+  
+  /* Play preview */
+  function playPreview(track) {
+    playUISound();
+    if (audioPreview) audioPreview.pause();
+    if (track.preview_url) {
+      audioPreview.src = track.preview_url;
+      audioPreview.play();
+    } else {
+      alert("Preview lagu tidak tersedia 😢");
+    }
+    const cover = track.album.images[0]?.url;
+    npC.src = cover;
+    npT.textContent = track.name;
+    npA.textContent = track.artists.map(a => a.name).join(', ');
+    np.style.display = 'flex';
+    adaptAura(cover);
+    dim.classList.add('on');
+  }
+  
+  /* Search filter */
+  searchBar.addEventListener('input', () => {
+    const q = searchBar.value.toLowerCase();
+    document.querySelectorAll('.song-item').forEach(it => {
+      const text = it.textContent.toLowerCase();
+      it.style.display = text.includes(q) ? 'flex' : 'none';
+    });
+  });
+  
+  /* Back button */
+  backBtn.onclick = () => {
+    playUISound();
+    playlistView.style.display = 'none';
+    grid.style.display = 'grid';
+    document.getElementById('sectionTitle').textContent = 'Your Playlists';
+  };
+  
+  /* Now Playing polling */
+  async function pollNowPlaying(t) {
+    try {
+      const r = await fetch(`https://api.spotify.com/v1/me/player/currently-playing`, {
+        headers: { Authorization: `Bearer ${t}` },
+      });
+      if (r.status === 204) {
+        dim.classList.remove('on');
+        np.style.display = 'none';
+        return;
+      }
+      const d = await r.json();
+      if (!d?.item) return;
+      const c = d.item.album.images[0].url;
+      npC.src = c;
+      npT.textContent = d.item.name;
+      npA.textContent = d.item.artists.map(a => a.name).join(', ');
+      np.style.display = 'flex';
+      adaptAura(c);
+      dim.classList.add('on');
+    } catch (e) {}
+  }
+  
+  /* Aura adapt + blur */
+  function adaptAura(u) {
+    const i = new Image();
+    i.crossOrigin = 'anonymous';
+    i.src = u;
+    i.onload = () => {
+      const c = document.createElement('canvas'),
+        x = c.getContext('2d', { willReadFrequently: true });
+      c.width = 64;
+      c.height = 64;
+      x.drawImage(i, 0, 0, 64, 64);
+      const dt = x.getImageData(0, 0, 64, 64).data;
+      let r = 0,
+        g = 0,
+        b = 0,
+        cnt = 0;
+      for (let k = 0; k < dt.length; k += 4) {
+        r += dt[k];
+        g += dt[k + 1];
+        b += dt[k + 2];
+        cnt++;
+      }
+      r = Math.round(r / cnt);
+      g = Math.round(g / cnt);
+      b = Math.round(b / cnt);
+      const gradient = `radial-gradient(circle at center, rgba(${r},${g},${b},0.55), rgba(0,0,0,0.9))`;
+      blurBg.style.background = gradient;
+    };
+  }
+  </script>
+  
