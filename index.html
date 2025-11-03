@@ -27,68 +27,18 @@ body{
 @keyframes fadeInButton{0%{opacity:0;transform:translateY(40px)}100%{opacity:1;transform:translateY(0)}}
 
 /* Frame */
-.frame {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  border-radius: 38px;
-  background: #000;
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity 2s ease;
-  isolation: isolate;        /* penting supaya pseudo-element ga ketumpuk konten */
-  z-index: 1;                /* pastikan di bawah konten tapi di atas background */
-}
-
-.frame::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 38px;
-  padding: 6px;
-  background: linear-gradient(
-    120deg,
-    var(--m-blue),
-    var(--m-purple),
-    var(--gravi-cyan),
-    var(--m-red),
-    var(--m-darkblue)
-  );
-  background-size: 400% 400%;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  filter: blur(6px);
-  animation: appleAura 10s ease-in-out infinite;
-  z-index: 2; /* tampil di atas bingkai hitam */
-}
-
-.rgb::before {
-  animation: rgbAura 4s ease-in-out infinite;
-}
-
-.frame::after {
-  content: '';
-  position: absolute;
-  inset: -10px;
-  border-radius: 48px;
-  background: linear-gradient(
-    120deg,
-    var(--m-blue),
-    var(--m-purple),
-    var(--m-red),
-    var(--gravi-cyan),
-    var(--m-darkblue)
-  );
-  background-size: 300% 300%;
-  filter: blur(40px);
-  opacity: .35;
-  animation: auraPulse 6s ease-in-out infinite;
-  z-index: 0; /* di bawah semuanya tapi tetap kelihatan */
-}
-
+.frame{position:relative;width:100vw;height:100vh;border-radius:38px;background:#000;overflow:hidden;opacity:0;transition:opacity 2s ease;}
+.frame::before{content:'';position:absolute;inset:0;border-radius:38px;padding:6px;
+  background:linear-gradient(120deg,var(--m-blue),var(--m-purple),var(--gravi-cyan),var(--m-red),var(--m-darkblue));
+  background-size:400% 400%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;filter:blur(6px);animation:appleAura 10s ease-in-out infinite;}
+.rgb::before{animation:rgbAura 4s ease-in-out infinite;}
+.frame::after{content:'';position:absolute;inset:-10px;border-radius:48px;
+  background:linear-gradient(120deg,var(--m-blue),var(--m-purple),var(--m-red),var(--gravi-cyan),var(--m-darkblue));
+  background-size:300% 300%;filter:blur(40px);opacity:.35;animation:auraPulse 6s ease-in-out infinite;z-index:0;}
+@keyframes appleAura{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes rgbAura{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes auraPulse{0%,100%{opacity:.3;filter:blur(35px)}50%{opacity:.6;filter:blur(50px)}}
 
 /* Animated Blur Background */
 .blur-bg{position:absolute;inset:0;filter:blur(180px);
