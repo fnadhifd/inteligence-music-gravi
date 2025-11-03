@@ -16,7 +16,7 @@ body{
 
 /* Intro */
 .intro{position:absolute;inset:0;background:#000;display:flex;flex-direction:column;
-  justify-content:center;align-items:center;text-align:center;transition:opacity 2s ease;z-index:10;}
+  justify-content:center;align-items:center;text-align:center;transition:opacity 2s ease;z-index:20;}
 .intro h1{font-size:2rem;letter-spacing:1px;background:linear-gradient(90deg,var(--gravi-cyan),var(--m-blue),var(--m-purple));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;opacity:0;animation:fadeInText 3s ease forwards;}
 .start-btn{margin-top:20px;background:linear-gradient(90deg,var(--m-blue),var(--m-purple));border:none;color:#fff;font-size:1rem;
@@ -40,7 +40,7 @@ body{
 @keyframes rgbAura{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 @keyframes auraPulse{0%,100%{opacity:.3;filter:blur(35px)}50%{opacity:.6;filter:blur(50px)}}
 
-/* Animated Blur Background */
+/* Blur background */
 .blur-bg{position:absolute;inset:0;filter:blur(180px);
   background:radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000);
   z-index:1;transition:background 1.2s ease;animation:mistShift 10s infinite alternate ease-in-out;}
@@ -66,7 +66,7 @@ body{
   font-weight:700;color:#fff;cursor:pointer;box-shadow:0 0 25px rgba(30,215,96,.4);transition:.3s;}
 .connect-btn:hover{box-shadow:0 0 40px rgba(30,215,96,.8);}
 
-/* Playlist grid */
+/* Grid playlist */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:18px;width:min(900px,92vw);}
 .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:14px;
   transition:transform .25s,box-shadow .25s;backdrop-filter:blur(8px);}
@@ -74,9 +74,9 @@ body{
 .thumb{width:100%;aspect-ratio:1/1;border-radius:16px;object-fit:cover;box-shadow:0 8px 24px rgba(0,0,0,.35);}
 .label{margin-top:10px;font-weight:600;opacity:.9;text-align:center;}
 
-/* Playlist view + search */
-.playlist-view{display:none;flex-direction:column;align-items:center;width:100%;animation:fadeInView .8s ease forwards;}
-@keyframes fadeInView{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+/* Playlist view */
+.playlist-view{display:none;flex-direction:column;align-items:center;width:100%;animation:fadeIn .6s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 .search-bar{width:min(500px,90%);padding:10px 16px;border:none;border-radius:16px;margin-bottom:20px;
   background:rgba(255,255,255,.08);color:white;backdrop-filter:blur(8px);font-size:1rem;outline:none;}
 .song-list{display:flex;flex-direction:column;gap:10px;width:min(700px,92vw);}
@@ -84,21 +84,14 @@ body{
   border-radius:14px;backdrop-filter:blur(8px);cursor:pointer;transition:background .3s,transform .2s;}
 .song-item:hover{background:rgba(255,255,255,.12);transform:scale(1.02);}
 .song-cover{width:50px;height:50px;border-radius:10px;object-fit:cover;}
-.song-info{flex:1;}
 .song-title{font-weight:600;}
 .song-artist{font-size:.85rem;opacity:.7;}
 .back-btn{background:rgba(255,255,255,.08);border:none;color:white;padding:10px 18px;border-radius:12px;
   margin-bottom:20px;cursor:pointer;backdrop-filter:blur(8px);font-weight:600;transition:.3s;}
 .back-btn:hover{background:rgba(255,255,255,.15);}
 
-/* Now Playing */
-.np{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:10px;}
-.np-cover{width:260px;height:260px;border-radius:22px;object-fit:cover;box-shadow:0 20px 60px rgba(0,0,0,.6);}
-.np-title{font-size:1.25rem;font-weight:800;}
-.np-artist{opacity:.75;}
-
 /* Bottom buttons */
-.buttons{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:20;}
+.buttons{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:none;gap:10px;z-index:20;}
 .btn{background:rgba(30,30,30,.85);color:#fff;border:1px solid rgba(255,255,255,.2);
   padding:10px 18px;border-radius:12px;cursor:pointer;backdrop-filter:blur(10px);font-weight:600;transition:.3s;}
 .btn:hover{background:rgba(255,255,255,.1);}
@@ -130,16 +123,10 @@ body{
       <input id="searchBar" class="search-bar" type="text" placeholder="Cari lagu di playlist ini..."/>
       <div id="songList" class="song-list"></div>
     </div>
-
-    <div id="nowPlaying" class="np" style="display:none;">
-      <img id="npCover" class="np-cover" src="" alt="">
-      <div class="np-title" id="npTitle"></div>
-      <div class="np-artist" id="npArtist"></div>
-    </div>
   </div>
 </div>
 
-<div class="buttons">
+<div class="buttons" id="bottomBtns">
   <button id="appleBtn" class="btn">Apple Flow</button>
   <button id="rgbBtn" class="btn">RGB Live</button>
 </div>
@@ -153,7 +140,8 @@ function playUISound(v=0.3){if(!uiBuffer)return;const src=audioCtx.createBufferS
 
 /* Intro */
 const intro=document.getElementById('intro'),frame=document.getElementById('frame');
-document.getElementById('startBtn').onclick=()=>{audioCtx.resume();playUISound();intro.style.opacity='0';setTimeout(()=>{intro.style.display='none';frame.style.opacity='1';},2000);}
+const bottomBtns=document.getElementById('bottomBtns');
+document.getElementById('startBtn').onclick=()=>{audioCtx.resume();playUISound();intro.style.opacity='0';setTimeout(()=>{intro.style.display='none';frame.style.opacity='1';bottomBtns.style.display='flex';},2000);}
 document.getElementById('appleBtn').onclick=()=>{playUISound();frame.classList.remove('rgb');}
 document.getElementById('rgbBtn').onclick=()=>{playUISound();frame.classList.add('rgb');}
 
@@ -171,8 +159,6 @@ const playlistView=document.getElementById('playlistView');
 const backBtn=document.getElementById('backBtn');
 const searchBar=document.getElementById('searchBar');
 const songList=document.getElementById('songList');
-const np=document.getElementById('nowPlaying');
-const npC=document.getElementById('npCover'),npT=document.getElementById('npTitle'),npA=document.getElementById('npArtist');
 const dim=document.getElementById('dim'),blurBg=document.getElementById('blurBg');
 let audioPreview=new Audio();
 const url=new URLSearchParams(location.search),code=url.get('code');
@@ -193,21 +179,11 @@ function onReady(token){
   connectBtn.style.display='none';
   topButtons.style.display='flex';
   loadPlaylists(token);
-  pollNowPlaying(token);
-  setInterval(()=>pollNowPlaying(token),8000);
 }
 
 /* Logout & Change Account */
 logoutBtn.onclick=()=>{playUISound();localStorage.removeItem('spotify_token');location.reload();}
-changeBtn.onclick = () => {
-  playUISound();
-  localStorage.removeItem('spotify_token');
-  const authURL = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
-    `&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-    `&scope=${encodeURIComponent(SCOPES)}` +
-    `&show_dialog=true`;
-  window.location.href = authURL;
-};
+changeBtn.onclick=()=>{playUISound();localStorage.removeItem('spotify_token');window.location.href=`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}&show_dialog=true`;};
 
 /* Load playlists */
 async function loadPlaylists(t){
@@ -252,16 +228,11 @@ function renderSongs(items){
     const img=document.createElement('img');
     img.src=t.album.images[0]?.url||'';
     img.className='song-cover';
-    const info=document.createElement('div');
-    info.className='song-info';
     const title=document.createElement('div');
-    title.className='song-title';
-    title.textContent=t.name;
+    title.className='song-title';title.textContent=t.name;
     const artist=document.createElement('div');
-    artist.className='song-artist';
-    artist.textContent=t.artists.map(a=>a.name).join(', ');
-    info.append(title,artist);
-    div.append(img,info);
+    artist.className='song-artist';artist.textContent=t.artists.map(a=>a.name).join(', ');
+    div.append(img,title,artist);
     div.onclick=()=>playPreview(t);
     songList.append(div);
   });
@@ -273,15 +244,10 @@ function playPreview(track){
   if(audioPreview)audioPreview.pause();
   if(track.preview_url){
     audioPreview.src=track.preview_url;
-    audioPreview.play();
+    audioPreview.play().catch(()=>alert("Klik sekali lagi untuk memutar lagu (izin audio browser)"));
+  } else {
+    alert("Preview lagu ini tidak tersedia 😢");
   }
-  const cover=track.album.images[0]?.url;
-  npC.src=cover;
-  npT.textContent=track.name;
-  npA.textContent=track.artists.map(a=>a.name).join(', ');
-  np.style.display='flex';
-  adaptAura(cover);
-  dim.classList.add('on');
 }
 
 /* Search filter */
@@ -301,24 +267,14 @@ backBtn.onclick=()=>{
   document.getElementById('sectionTitle').textContent='Your Playlists';
 };
 
-/* Now Playing (polling) */
-async function pollNowPlaying(t){
-  try{
-    const r=await fetch(`https://api.spotify.com/v1/me/player/currently-playing`,{headers:{Authorization:`Bearer ${t}`}});
-    if(r.status===204){dim.classList.remove('on');np.style.display='none';return;}
-    const d=await r.json();if(!d?.item)return;
-    const c=d.item.album.images[0].url;
-    npC.src=c;npT.textContent=d.item.name;npA.textContent=d.item.artists.map(a=>a.name).join(', ');
-    np.style.display='flex';adaptAura(c);dim.classList.add('on');
-  }catch(e){}
-}
-
 /* Aura adapt + blur */
 function adaptAura(u){
   const i=new Image();i.crossOrigin='anonymous';i.src=u;
-  i.onload=()=>{const c=document.createElement('canvas'),x=c.getContext('2d',{willReadFrequently:true});
+  i.onload=()=>{const c=document.createElement('canvas'),
+  x=c.getContext('2d',{willReadFrequently:true});
   c.width=64;c.height=64;x.drawImage(i,0,0,64,64);
-  const dt=x.getImageData(0,0,64,64).data;let r=0,g=0,b=0,cnt=0;
+  const dt=x.getImageData(0,0,64,64).data;
+  let r=0,g=0,b=0,cnt=0;
   for(let k=0;k<dt.length;k+=4){r+=dt[k];g+=dt[k+1];b+=dt[k+2];cnt++;}
   r=Math.round(r/cnt);g=Math.round(g/cnt);b=Math.round(b/cnt);
   const gradient=`radial-gradient(circle at center, rgba(${r},${g},${b},0.55), rgba(0,0,0,0.9))`;
