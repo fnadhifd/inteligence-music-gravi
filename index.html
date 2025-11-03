@@ -16,7 +16,7 @@ body{
 
 /* Intro */
 .intro{position:absolute;inset:0;background:#000;display:flex;flex-direction:column;
-  justify-content:center;align-items:center;text-align:center;transition:opacity 2s ease;z-index:6;}
+  justify-content:center;align-items:center;text-align:center;transition:opacity 2s ease;z-index:10;}
 .intro h1{font-size:2rem;letter-spacing:1px;background:linear-gradient(90deg,var(--gravi-cyan),var(--m-blue),var(--m-purple));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;opacity:0;animation:fadeInText 3s ease forwards;}
 .start-btn{margin-top:20px;background:linear-gradient(90deg,var(--m-blue),var(--m-purple));border:none;color:#fff;font-size:1rem;
@@ -35,35 +35,40 @@ body{
 .rgb::before{animation:rgbAura 4s ease-in-out infinite;}
 .frame::after{content:'';position:absolute;inset:-10px;border-radius:48px;
   background:linear-gradient(120deg,var(--m-blue),var(--m-purple),var(--m-red),var(--gravi-cyan),var(--m-darkblue));
-  background-size:300% 300%;filter:blur(40px);opacity:.35;animation:auraPulse 6s ease-in-out infinite;z-index:-1;}
+  background-size:300% 300%;filter:blur(40px);opacity:.35;animation:auraPulse 6s ease-in-out infinite;z-index:0;}
 @keyframes appleAura{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 @keyframes rgbAura{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 @keyframes auraPulse{0%,100%{opacity:.3;filter:blur(35px)}50%{opacity:.6;filter:blur(50px)}}
 
-/* Dynamic blur background */
+/* Animated Blur Background */
 .blur-bg{
-  position:absolute;inset:0;filter:blur(160px);
-  background:radial-gradient(circle at center, rgba(0,0,0,0.6), #000);
-  z-index:0;opacity:0.8;transition:background 1.5s ease;
+  position:absolute;inset:0;filter:blur(180px);
+  background:radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000);
+  z-index:1;transition:background 1.2s ease;
+  animation:mistShift 10s infinite alternate ease-in-out;
+}
+@keyframes mistShift{
+  0%{transform:scale(1.05) translate(10px,10px);}
+  100%{transform:scale(1.1) translate(-10px,-10px);}
 }
 
-/* Overlay dim saat lagu */
+/* Overlay */
 .dim-overlay{position:absolute;inset:0;border-radius:38px;background:rgba(0,0,0,.25);
-  opacity:0;transition:opacity .6s ease;pointer-events:none;z-index:3;}
+  opacity:0;transition:opacity .6s ease;pointer-events:none;z-index:2;}
 .dim-overlay.on{opacity:.45;}
 
 /* Buttons */
 .logout-btn,.change-btn{
   background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);color:#fff;
   padding:8px 14px;border-radius:12px;font-size:.9rem;cursor:pointer;backdrop-filter:blur(10px);
-  z-index:10;transition:.3s;margin-right:10px;
+  z-index:20;transition:.3s;margin-right:10px;
 }
 .logout-btn:hover,.change-btn:hover{background:rgba(255,255,255,.1);}
-.top-buttons{position:fixed;top:20px;left:20px;display:flex;}
+.top-buttons{position:fixed;top:20px;left:20px;display:flex;z-index:30;}
 
 /* Content */
 .content{position:absolute;inset:0;padding:64px 24px 100px;display:flex;flex-direction:column;
-  align-items:center;gap:24px;z-index:4;overflow:auto;}
+  align-items:center;gap:24px;z-index:10;overflow:auto;}
 .title{font-weight:700;opacity:.9}
 .connect-btn{background:linear-gradient(90deg,#1db954,#1ed760);border:none;padding:12px 28px;border-radius:16px;
   font-weight:700;color:#fff;cursor:pointer;box-shadow:0 0 25px rgba(30,215,96,.4);transition:.3s;}
@@ -84,7 +89,7 @@ body{
 .np-artist{opacity:.75;}
 
 /* Bottom buttons */
-.buttons{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:5;}
+.buttons{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:20;}
 .btn{background:rgba(30,30,30,.85);color:#fff;border:1px solid rgba(255,255,255,.2);
   padding:10px 18px;border-radius:12px;cursor:pointer;backdrop-filter:blur(10px);font-weight:600;transition:.3s;}
 .btn:hover{background:rgba(255,255,255,.1);}
@@ -179,11 +184,12 @@ changeBtn.onclick=()=>{playUISound();localStorage.removeItem('spotify_token');lo
 async function loadPlaylists(t){
   grid.style.display='grid';
   grid.innerHTML="";
-  grid.appendChild(makeCard({id:'__liked__',name:'Liked Songs',images:[{url:'https://i.imgur.com/0Z8FQpT.png'}]}));
   const r=await fetch(`https://api.spotify.com/v1/me/playlists?limit=50`,{headers:{Authorization:`Bearer ${t}`}});
   if(!r.ok)return;const d=await r.json();
   d.items.forEach(p=>grid.appendChild(makeCard(p)));
 }
+
+/* Playlist Card */
 function makeCard(p){
   const c=document.createElement('div');
   c.className='card';
@@ -207,7 +213,7 @@ async function pollNowPlaying(t){
   }catch(e){}
 }
 
-/* Aura adapt + blur */
+/* Aura adapt + blur fix */
 function adaptAura(u){
   const i=new Image();i.crossOrigin='anonymous';i.src=u;
   i.onload=()=>{const c=document.createElement('canvas'),x=c.getContext('2d',{willReadFrequently:true});
@@ -215,10 +221,8 @@ function adaptAura(u){
   const dt=x.getImageData(0,0,64,64).data;let r=0,g=0,b=0,cnt=0;
   for(let k=0;k<dt.length;k+=4){r+=dt[k];g+=dt[k+1];b+=dt[k+2];cnt++;}
   r=Math.round(r/cnt);g=Math.round(g/cnt);b=Math.round(b/cnt);
-  const gradient=`radial-gradient(circle at center, rgba(${r},${g},${b},0.45), rgba(0,0,0,0.8))`;
+  const gradient=`radial-gradient(circle at center, rgba(${r},${g},${b},0.55), rgba(0,0,0,0.9))`;
   blurBg.style.background=gradient;
-  frame.style.setProperty('--m-blue',`rgb(${Math.min(255,r+40)},${Math.max(0,g-10)},${Math.min(255,b+80)})`);
-  frame.style.setProperty('--m-purple',`rgb(${Math.min(255,r+120)},${Math.max(0,g)},${Math.min(255,b+160)})`);
   };
 }
 </script>
