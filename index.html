@@ -14,26 +14,16 @@
   --af-core:#002622;       /* hijau tua gelap */
   --af-cyan-soft: rgba(0,232,208,.20);
   --af-cyan-soft2: rgba(0,190,170,.16);
-
-  /* New: Apple Music Colors for Contrast */
-  --am-text-light: #ffffff;
-  --am-text-dim: rgba(255, 255, 255, 0.55);
-  --am-active-text: #ffffff;
 }
 *{box-sizing:border-box}
 body{
   margin:0;background:#000;display:flex;justify-content:center;align-items:center;
-  height:100vh;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--am-text-light);
-}
-
-/* Kunci Scroll saat Fullscreen Cover Aktif */
-body.scroll-locked {
-  overflow: hidden !important;
+  height:100vh;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#fff;
 }
 
 /* Intro */
 .intro{position:absolute;inset:0;background:#000;display:flex;flex-direction:column;
-  justify-content:center;align-items:center;text-align:center;transition:opacity 2s ease;z-index:100;}
+  justify-content:center;align-items:center;text-align:center;transition:opacity 2s ease;z-index:10;}
 .intro h1{font-size:2rem;letter-spacing:1px;background:linear-gradient(90deg,var(--gravi-cyan),var(--m-blue),var(--m-purple));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;opacity:0;animation:fadeInText 3s ease forwards;}
 .start-btn{margin-top:20px;background:linear-gradient(90deg,var(--m-blue),var(--m-purple));border:none;color:#fff;font-size:1rem;
@@ -43,22 +33,16 @@ body.scroll-locked {
 @keyframes fadeInText{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
 @keyframes fadeInButton{0%{opacity:0;transform:translateY(40px)}100%{opacity:1;transform:translateY(0)}}
 
-/* Frame (Default) */
+/* Frame */
 .frame{position:relative;width:100vw;height:100vh;border-radius:38px;background:#000;overflow:hidden;opacity:0;transition:opacity 2s ease;}
-
-/* Default Animated Edge (RGB/GRAVI Aura) */
 .frame::before{content:'';position:absolute;inset:0;border-radius:38px;padding:6px;
   background:linear-gradient(120deg,var(--m-blue),var(--m-purple),var(--gravi-cyan),var(--m-red),var(--m-darkblue));
   background-size:400% 400%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
   -webkit-mask-composite:xor;mask-composite:exclude;filter:blur(6px);animation:appleAura 10s ease-in-out infinite;}
-/* Default Outer Glow */
+.rgb::before{animation:rgbAura 4s ease-in-out infinite;}
 .frame::after{content:'';position:absolute;inset:-10px;border-radius:48px;
   background:linear-gradient(120deg,var(--m-blue),var(--m-purple),var(--m-red),var(--gravi-cyan),var(--m-darkblue));
   background-size:300% 300%;filter:blur(40px);opacity:.35;animation:auraPulse 6s ease-in-out infinite;z-index:0;}
-
-/* RGB Mode overrides (only changes 'before' animation) */
-.rgb::before{animation:rgbAura 4s ease-in-out infinite;}
-
 @keyframes appleAura{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 @keyframes rgbAura{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 @keyframes auraPulse{0%,100%{opacity:.3;filter:blur(35px)}50%{opacity:.6;filter:blur(50px)}}
@@ -75,13 +59,13 @@ body.scroll-locked {
 /* Buttons */
 .logout-btn,.change-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);color:#fff;
   padding:8px 14px;border-radius:12px;font-size:.9rem;cursor:pointer;backdrop-filter:blur(10px);
-  z-index:30;transition:.3s;margin-right:10px;}
+  z-index:20;transition:.3s;margin-right:10px;}
 .logout-btn:hover,.change-btn:hover{background:rgba(255,255,255,.1);}
-.top-buttons{position:fixed;top:20px;left:20px;display:flex;z-index:30;transition:opacity 0.5s, visibility 0.5s;}
+.top-buttons{position:fixed;top:20px;left:20px;display:flex;z-index:30;}
 
 /* Content */
 .content{position:absolute;inset:0;padding:64px 24px 100px;display:flex;flex-direction:column;
-  align-items:center;gap:24px;z-index:10;overflow:auto;transition:opacity 0.5s, visibility 0.5s;}
+  align-items:center;gap:24px;z-index:10;overflow:auto;}
 .title{font-weight:700;opacity:.9}
 .connect-btn{background:linear-gradient(90deg,#1db954,#1ed760);border:none;padding:12px 28px;border-radius:16px;
   font-weight:700;color:#fff;cursor:pointer;box-shadow:0 0 25px rgba(30,215,96,.4);transition:.3s;}
@@ -112,60 +96,15 @@ body.scroll-locked {
   margin-bottom:20px;cursor:pointer;backdrop-filter:blur(8px);font-weight:600;transition:.3s;}
 .back-btn:hover{background:rgba(255,255,255,.15);}
 
-/* Now Playing (Normal View) */
-.np{
-  display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:10px;
-  transition: all 0.5s ease-in-out;
-}
+/* Now Playing */
+.np{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:10px;}
 .np-cover{width:260px;height:260px;border-radius:22px;object-fit:cover;box-shadow:0 20px 60px rgba(0,0,0,.6);
-  cursor:pointer;transition:transform .55s cubic-bezier(.2,.8,.2,1), box-shadow .55s, border-radius .55s, width .55s, height .55s;}
-.np-title{font-size:1.25rem;font-weight:800; text-align: center;}
-.np-artist{opacity:.75; text-align: center;}
-
-/* NOW PLAYING FULLSCREEN COVER MODE */
-.np.fullscreen {
-  position: fixed; 
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  justify-content: center;
-  align-items: center;
-  z-index: 50; 
-  background: rgba(0, 0, 0, 0.95); 
-  margin-top: 0;
-  padding-top: 0; 
-  padding-bottom: 50px; /* Tambahkan padding bawah untuk judul */
-  display: flex;
-  flex-direction: column;
-}
-
-.np.fullscreen .np-cover {
-  /* Ukuran medium yang baru (sekitar 70% dari viewport height, max 500px) */
-  width: min(70vw, 500px); 
-  height: min(70vw, 500px);
-  border-radius: 20px; /* Sedikit lebih membulat */
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
-  margin-bottom: 20px; /* Jarak antara cover dan info lagu */
-}
-
-/* TAMPILKAN Judul dan Artis saat Fullscreen, beri style besar */
-.np.fullscreen .np-title {
-  display: block; 
-  font-size: 2.5rem; /* Ukuran besar untuk judul */
-  font-weight: 800;
-  margin-top: 10px;
-  line-height: 1.1;
-}
-.np.fullscreen .np-artist {
-  display: block;
-  font-size: 1.5rem; /* Ukuran sedang untuk artis */
-  opacity: 0.9;
-  margin-top: 5px;
-}
+  cursor:pointer;transition:transform .55s cubic-bezier(.2,.8,.2,1), box-shadow .55s;}
+.np-title{font-size:1.25rem;font-weight:800;}
+.np-artist{opacity:.75;}
 
 /* Bottom buttons */
-.buttons{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:40;transition:opacity 0.5s, visibility 0.5s;}
+.buttons{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:20;}
 .btn{background:rgba(30,30,30,.85);color:#fff;border:1px solid rgba(255,255,255,.2);
   padding:10px 18px;border-radius:12px;cursor:pointer;backdrop-filter:blur(10px);font-weight:600;transition:.3s;}
 .btn:hover{background:rgba(255,255,255,.1);}
@@ -173,26 +112,19 @@ body.scroll-locked {
 /* =========================
    🎵 APPLE FLOW – SKYFALL (OPTIMIZED)
    ========================= */
-.frame.appleflow::before{
-  /* Matikan animasi dan hilangkan bingkai internal */
-  animation:none;
-  opacity:0;
-  pointer-events: none;
-}
+.frame.appleflow::before{animation:none;opacity:0;}
 .frame.appleflow::after{
-  /* Matikan animasi dan hilangkan outer glow */
-  opacity:0;
-  filter: none;
-  animation:none;
-  pointer-events: none;
+  background: radial-gradient(130% 130% at 50% 50%,
+              rgba(0,0,0,0) 45%,
+              rgba(0,0,0,.45) 78%,
+              rgba(0,0,0,.75) 100%);
+  filter:none;animation:none;opacity:1;
 }
 .frame.appleflow{
-  /* Ganti latar belakang utama menjadi radial gradient gelap (seperti Apple Music) */
   background: radial-gradient(80% 80% at 50% 50%, var(--af-deep) 0%, #000 70%);
 }
 .frame.appleflow .blur-bg{
   inset:-12%;
-  /* Atur gradient Apple Flow yang khas (hitam-hijau) */
   background:
     radial-gradient(45% 45% at 52% 48%, var(--af-core) 0%, #000 70%),
     radial-gradient(38% 38% at 62% 42%, var(--af-cyan-soft), rgba(0,0,0,0) 70%),
@@ -208,29 +140,51 @@ body.scroll-locked {
 body.appleflow-active{background:#000;}
 @media (prefers-reduced-motion: reduce){.frame.appleflow .blur-bg{animation:none !important;}}
 
-/* Media Queries untuk Ponsel */
-@media (max-width: 768px) {
-  .frame .np-cover{
-    width: min(70vw, 250px);
-    height: min(70vw, 250px);
-  }
-  .frame .np-title{font-size: 1.5rem;}
-  .frame .np-artist{font-size: 1rem;}
-
-  .np.fullscreen .np-cover {
-    /* Ukuran medium untuk ponsel */
-    width: 80vw;
-    height: 80vw;
-    max-height: 80vh;
-    max-width: 80vh;
-  }
-  .np.fullscreen .np-title {
-    font-size: 2rem; /* Judul lebih kecil di ponsel */
-  }
-  .np.fullscreen .np-artist {
-    font-size: 1.2rem; /* Artis lebih kecil di ponsel */
-  }
+/* =========================
+   ✅ FULLSCREEN PLAYER (SMOOTH)
+   ========================= */
+.frame.fullscreen{
+  /* gunakan latar dari adaptAura; vignette lembut di pinggir */
 }
+.frame.fullscreen::before{opacity:0}
+.frame.fullscreen::after{
+  background: radial-gradient(130% 130% at 50% 50%,
+              rgba(0,0,0,0) 42%,
+              rgba(0,0,0,.40) 80%,
+              rgba(0,0,0,.70) 100%);
+  filter:none;animation:none;opacity:1;
+}
+.frame.fullscreen .content{
+  /* sembunyikan elemen lain pelan */
+  opacity:.98; transition: opacity .35s ease;
+}
+.frame.fullscreen .grid,
+.frame.fullscreen .playlist-view,
+.frame.fullscreen .title,
+.frame.fullscreen .connect-btn{opacity:0;pointer-events:none}
+
+/* Posisikan cover ke tengah, besar, smooth */
+.frame.fullscreen .np{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:12;
+}
+.frame.fullscreen .np-cover{
+  width:min(70vmin,520px);height:min(70vmin,520px);
+  transform:translateZ(0) scale(1.02);
+  box-shadow:0 40px 120px rgba(0,0,0,.55);
+  border-radius:24px;
+}
+.frame.fullscreen .np-title,.frame.fullscreen .np-artist{display:none}
+
+/* Layer kabut adaptif saat fullscreen */
+.frame.fullscreen .blur-bg{
+  inset:-14%;
+  filter:blur(70px);
+  will-change: transform, opacity;
+  animation: fs-rotate 36s linear infinite;
+  opacity:.95;
+  transition: opacity .6s ease, transform .6s ease, background .8s ease;
+}
+@keyframes fs-rotate{from{transform:rotate(0deg) scale(1.05)}to{transform:rotate(360deg) scale(1.05)}}
 </style>
 </head>
 <body>
@@ -244,12 +198,12 @@ body.appleflow-active{background:#000;}
   <div class="blur-bg" id="blurBg"></div>
   <div class="dim-overlay" id="dim"></div>
 
-  <div class="top-buttons" id="topButtons" style="display:none; opacity: 1; visibility: visible;">
+  <div class="top-buttons" id="topButtons" style="display:none;">
     <button id="logoutBtn" class="logout-btn">Log Out</button>
     <button id="changeAccount" class="change-btn">Change Account</button>
   </div>
 
-  <div class="content" id="content" style="opacity: 1; visibility: visible;">
+  <div class="content" id="content">
     <h2 class="title" id="sectionTitle">Connect your Spotify</h2>
     <button id="connectSpotify" class="connect-btn">Connect Spotify</button>
     <div id="playlistGrid" class="grid" style="display:none;"></div>
@@ -259,19 +213,16 @@ body.appleflow-active{background:#000;}
       <input id="searchBar" class="search-bar" type="text" placeholder="Cari lagu di playlist ini..."/>
       <div id="songList" class="song-list"></div>
     </div>
-    
-    <!-- Bagian NP (Now Playing) -->
+
     <div id="nowPlaying" class="np" style="display:none;">
-      <img id="npCover" class="np-cover" src="" alt="Album Cover">
+      <img id="npCover" class="np-cover" src="" alt="">
       <div class="np-title" id="npTitle"></div>
       <div class="np-artist" id="npArtist"></div>
     </div>
-    
   </div>
-  
 </div>
 
-<div class="buttons" id="bottomBtns" style="display:none; opacity: 1; visibility: visible;">
+<div class="buttons" id="bottomBtns" style="display:none;">
   <button id="appleBtn" class="btn">Apple Flow</button>
   <button id="rgbBtn" class="btn">RGB Live</button>
 </div>
@@ -280,9 +231,7 @@ body.appleflow-active{background:#000;}
   /* Intro Sound */
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   let uiBuffer;
-  // Ganti path ke intro.mp3
-  const introAudioPath = 'https://cdn.jsdelivr.net/gh/google/flat-icons/svg/volume-up.svg'; // Placeholder untuk linting
-  fetch(introAudioPath).then(r=>r.arrayBuffer()).then(b=>audioCtx.decodeSourceData(b)).then(d=>(uiBuffer=d)).catch(e=>console.log("Intro sound failed to load:", e));
+  fetch('audio/intro.mp3').then(r=>r.arrayBuffer()).then(b=>audioCtx.decodeAudioData(b)).then(d=>(uiBuffer=d));
   function playUISound(v=0.3){ if(!uiBuffer) return; const s=audioCtx.createBufferSource(); const g=audioCtx.createGain(); g.gain.value=v; s.buffer=uiBuffer; s.connect(g).connect(audioCtx.destination); s.start(0); }
 
   /* Intro */
@@ -300,14 +249,7 @@ body.appleflow-active{background:#000;}
   document.getElementById('appleBtn').onclick=()=>{
     playUISound();
     frame.classList.remove('rgb');
-    
-    // Hapus class appleflow jika sudah ada
-    if(frame.classList.contains('appleflow')){
-      frame.classList.remove('appleflow');
-    } else {
-      frame.classList.add('appleflow');
-    }
-    
+    frame.classList.toggle('appleflow');
     document.body.classList.toggle('appleflow-active');
 
     if(frame.classList.contains('appleflow')){
@@ -319,24 +261,9 @@ body.appleflow-active{background:#000;}
       blurBg.style.filter='blur(70px)';
       blurBg.style.animation='af-rotate 32s linear infinite';
       blurBg.style.opacity='0.95';
-      
-      // Matikan bingkai aura default/rgb saat mode appleflow aktif
-      frame.style.setProperty('--m-blue', 'rgba(0,0,0,0)');
-      frame.style.setProperty('--m-purple', 'rgba(0,0,0,0)');
-      frame.style.setProperty('--gravi-cyan', 'rgba(0,0,0,0)');
-      frame.style.setProperty('--m-red', 'rgba(0,0,0,0)');
-      frame.style.setProperty('--m-darkblue', 'rgba(0,0,0,0)');
-
     }else{
-      // back to default (kembalikan warna default aura untuk default/RGB)
-      frame.style.setProperty('--m-blue', '#007bff');
-      frame.style.setProperty('--m-purple', '#a000ff');
-      frame.style.setProperty('--gravi-cyan', '#00fff2');
-      frame.style.setProperty('--m-red', '#ff003c');
-      frame.style.setProperty('--m-darkblue', '#002bff');
-      
-      // back to default blur bg
-      blurBg.style.animation='appleAura 10s ease-in-out infinite'; // Kembalikan animasi default
+      // back to default
+      blurBg.style.animation='';
       blurBg.style.opacity='1';
       blurBg.style.filter='blur(80px)';
       blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
@@ -347,19 +274,9 @@ body.appleflow-active{background:#000;}
   document.getElementById('rgbBtn').onclick=()=>{
     playUISound();
     frame.classList.add('rgb');
-    frame.classList.remove('appleflow');
+    frame.classList.remove('appleflow','fullscreen');
     document.body.classList.remove('appleflow-active');
-    
-    // Kembalikan warna default aura
-    frame.style.setProperty('--m-blue', '#007bff');
-    frame.style.setProperty('--m-purple', '#a000ff');
-    frame.style.setProperty('--gravi-cyan', '#00fff2');
-    frame.style.setProperty('--m-red', '#ff003c');
-    frame.style.setProperty('--m-darkblue', '#002bff');
-    
-    // Set blur bg ke default
-    blurBg.style.animation='rgbAura 4s ease-in-out infinite';
-    blurBg.style.opacity='1';
+    blurBg.style.animation=''; blurBg.style.opacity='1';
     blurBg.style.filter='blur(80px)';
     blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
   };
@@ -384,7 +301,6 @@ body.appleflow-active{background:#000;}
         npT=document.getElementById('npTitle'),
         npA=document.getElementById('npArtist');
   const dim=document.getElementById('dim');
-
   let audioPreview=new Audio();
   const url=new URLSearchParams(location.search), code=url.get('code');
 
@@ -408,8 +324,6 @@ body.appleflow-active{background:#000;}
   function onReady(token){
     connectBtn.style.display='none';
     topButtons.style.display='flex';
-    // Pastikan tombol terlihat (opacity=1) setelah auth
-    topButtons.style.opacity = '1';
     loadPlaylists(token);
     pollNowPlaying(token);
     setInterval(()=>pollNowPlaying(token),8000);
@@ -459,76 +373,19 @@ body.appleflow-active{background:#000;}
     });
   }
 
-  /* Fullscreen Cover Toggle & Play/Pause */
-  
-  function toggleFullscreenCover(state) {
-    const isReady = getT();
-    np.classList.toggle('fullscreen', state);
-    document.body.classList.toggle('scroll-locked', state);
-    
-    // Tentukan visibilitas tombol
-    const visibility = state ? 'hidden' : 'visible';
-    const opacity = state ? '0' : '1';
-    
-    // Sembunyikan/Tampilkan Top & Bottom Controls
-    topButtons.style.visibility = visibility;
-    topButtons.style.opacity = opacity;
-    
-    bottomBtns.style.visibility = visibility;
-    bottomBtns.style.opacity = opacity;
-    
-    // Khusus untuk Now Playing, ubah display agar tetap muncul
-    if (!state) {
-      np.style.display = 'flex';
-      if (isReady) {
-        bottomBtns.style.display = 'flex';
-        topButtons.style.display = 'flex';
-      }
-    } 
-  }
-  
-  // Single Click Handler untuk Cover (Toggle Fullscreen + Play/Pause)
-  npC.onclick = () => {
-      // 1. Handle Play/Pause
-      if (audioPreview.src) { 
-          if (audioPreview.paused) {
-              audioPreview.play();
-              console.log("Audio Preview dimainkan.");
-          } else {
-              audioPreview.pause();
-              console.log("Audio Preview dijeda.");
-          }
-      }
-      
-      // 2. Toggle Fullscreen State
-      const isFullscreen = np.classList.contains('fullscreen');
-      toggleFullscreenCover(!isFullscreen);
-  };
-  
   /* Play preview */
   function playPreview(track){
     playUISound();
     if(audioPreview) audioPreview.pause();
-    
-    if(track.preview_url){ 
-        audioPreview.src=track.preview_url; 
-        audioPreview.play(); 
-    } else { 
-        console.warn("Preview lagu tidak tersedia 😢"); 
-    }
-    
+    if(track.preview_url){ audioPreview.src=track.preview_url; audioPreview.play(); }
+    else { alert("Preview lagu tidak tersedia 😢"); }
     const cover=track.album.images[0]?.url;
     npC.src=cover; npT.textContent=track.name; npA.textContent=track.artists.map(a=>a.name).join(', ');
     np.style.display='flex';
-    adaptAura(cover);
+    adaptAura(cover);            // -> set background sesuai cover
     dim.classList.add('on');
-    
-    // Pastikan saat preview baru diputar, kita keluar dari fullscreen jika sedang aktif
-    if (np.classList.contains('fullscreen')) {
-        toggleFullscreenCover(false);
-    }
   }
-  
+
   /* Search filter */
   searchBar.addEventListener('input',()=>{
     const q=searchBar.value.toLowerCase();
@@ -553,28 +410,48 @@ body.appleflow-active{background:#000;}
       if(r.status===204){ dim.classList.remove('on'); np.style.display='none'; return; }
       const d=await r.json(); if(!d?.item) return;
       const c=d.item.album.images[0].url;
-      
-      // Update data Now Playing
       npC.src=c; npT.textContent=d.item.name; npA.textContent=d.item.artists.map(a=>a.name).join(', ');
       np.style.display='flex';
       adaptAura(c);
       dim.classList.add('on');
-      
-      // Jika lagu berubah, pastikan kita keluar dari mode fullscreen
-      if (np.classList.contains('fullscreen')) {
-        // Cek apakah judul berubah, jika iya, keluar dari fullscreen
-        if (npT.textContent !== d.item.name) {
-             toggleFullscreenCover(false);
-        }
-      }
-      
-    }catch(e){console.error("Polling error:", e);}
+    }catch(e){}
   }
-  
-  /* Aura adapt + blur – generate gradient yang enak untuk background */
+
+  /* ===== Fullscreen behaviour ===== */
+  let lastAuraBg = ''; // simpan gradient adaptif terakhir
+  function enterFullscreen(){
+    frame.classList.add('fullscreen');
+    // gunakan warna adaptif terakhir; jika kosong, fallback gelap
+    blurBg.style.background = lastAuraBg || 'radial-gradient(circle at 50% 50%, rgba(0,0,0,.8), #000)';
+    blurBg.style.animation = 'fs-rotate 36s linear infinite';
+    blurBg.style.filter = 'blur(70px)';
+    blurBg.style.opacity = '0.96';
+  }
+  function exitFullscreen(){
+    frame.classList.remove('fullscreen');
+    // restore sesuai mode aktif
+    if(frame.classList.contains('appleflow')){
+      blurBg.style.background =
+        'radial-gradient(45% 45% at 52% 48%, #002622 0%, #000 70%),' +
+        'radial-gradient(38% 38% at 62% 42%, rgba(0,232,208,.20), rgba(0,0,0,0) 70%),' +
+        'radial-gradient(32% 32% at 38% 62%, rgba(0,190,170,.16), rgba(0,0,0,0) 72%)';
+      blurBg.style.animation = 'af-rotate 32s linear infinite';
+      blurBg.style.filter='blur(70px)'; blurBg.style.opacity='0.95';
+    }else{
+      blurBg.style.animation='';
+      blurBg.style.filter='blur(80px)'; blurBg.style.opacity='1';
+      blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
+    }
+  }
+
+  // Toggle on cover click
+  npC.addEventListener('click', ()=>{
+    playUISound();
+    if(frame.classList.contains('fullscreen')) exitFullscreen(); else enterFullscreen();
+  });
+
+  /* Aura adapt + blur – generate gradient yang enak untuk fullscreen */
   function adaptAura(u){
-    if (!blurBg) return; 
-    
     const i=new Image(); i.crossOrigin='anonymous'; i.src=u;
     i.onload=()=>{
       const c=document.createElement('canvas'), x=c.getContext('2d',{willReadFrequently:true});
@@ -584,20 +461,11 @@ body.appleflow-active{background:#000;}
       for(let k=0;k<dt.length;k+=4){ r+=dt[k]; g+=dt[k+1]; b+=dt[k+2]; cnt++; }
       r=Math.round(r/cnt); g=Math.round(g/cnt); b=Math.round(b/cnt);
       // buat dua spot: core & highlight lembut
-      const newAuraBg =
+      lastAuraBg =
         `radial-gradient(46% 46% at 50% 50%, rgba(${r},${g},${b},0.45) 0%, rgba(0,0,0,0.92) 68%),`+
         `radial-gradient(30% 30% at 70% 40%, rgba(${r},${g},${b},0.22), rgba(0,0,0,0) 70%)`;
-      
-      // apply langsung ke blurBg
-      blurBg.style.background = newAuraBg;
-      
-      // Reset animasi agar terlihat fresh, jika tidak dalam mode Apple Flow
-      if(!frame.classList.contains('appleflow')){
-          blurBg.style.animation='appleAura 10s ease-in-out infinite';
-          if(frame.classList.contains('rgb')){
-             blurBg.style.animation='rgbAura 4s ease-in-out infinite';
-          }
-      }
+      // apply langsung ke blurBg (baik normal maupun fullscreen)
+      blurBg.style.background = lastAuraBg;
     };
   }
 </script>
