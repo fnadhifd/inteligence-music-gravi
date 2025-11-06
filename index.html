@@ -139,6 +139,33 @@ body.scroll-locked {
   display: flex;
   flex-direction: column;
 }
+.np.fullscreen .close-btn {
+    display: flex; /* Tampilkan tombol Close */
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 50%;
+    cursor: pointer;
+    backdrop-filter: blur(15px);
+    font-size: 1.2rem;
+    line-height: 1;
+    font-weight: 300;
+    transition: background 0.3s;
+    z-index: 60; /* Pastikan di atas cover */
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+.np.fullscreen .close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
 
 .np.fullscreen .np-cover {
   /* Ukuran medium yang baru (sekitar 70% dari viewport height, max 500px) */
@@ -230,6 +257,13 @@ body.appleflow-active{background:#000;}
   .np.fullscreen .np-artist {
     font-size: 1.2rem; /* Artis lebih kecil di ponsel */
   }
+  .np.fullscreen .close-btn {
+      top: 15px;
+      right: 15px;
+      width: 36px;
+      height: 36px;
+      font-size: 1rem;
+  }
 }
 </style>
 </head>
@@ -262,6 +296,7 @@ body.appleflow-active{background:#000;}
     
     <!-- Bagian NP (Now Playing) -->
     <div id="nowPlaying" class="np" style="display:none;">
+      <button id="closeFullscreenBtn" class="close-btn" style="display: none;">✕</button>
       <img id="npCover" class="np-cover" src="" alt="Album Cover">
       <div class="np-title" id="npTitle"></div>
       <div class="np-artist" id="npArtist"></div>
@@ -384,6 +419,7 @@ body.appleflow-active{background:#000;}
         npT=document.getElementById('npTitle'),
         npA=document.getElementById('npArtist');
   const dim=document.getElementById('dim');
+  const closeFsBtn = document.getElementById('closeFullscreenBtn'); // Ambil tombol baru
 
   let audioPreview=new Audio();
   const url=new URLSearchParams(location.search), code=url.get('code');
@@ -398,6 +434,8 @@ body.appleflow-active{background:#000;}
       };
     }
   }else{
+    // Ini hanya untuk demo, API Token di canvas akan di-handle oleh environment
+    // Dalam kasus nyata, Anda perlu server-side proxy untuk menukar code dengan token
     fetch(`/api/token?code=${code}`).then(r=>r.json()).then(d=>{
       saveT(d.access_token);
       history.replaceState({},document.title,location.pathname);
@@ -425,15 +463,20 @@ body.appleflow-active{background:#000;}
   /* Load playlists */
   async function loadPlaylists(t){
     grid.style.display='grid'; grid.innerHTML="";
-    const r=await fetch(`https://api.spotify.com/v1/me/playlists?limit=50`,{headers:{Authorization:`Bearer ${t}`}});
-    if(!r.ok) return; const d=await r.json(); d.items.forEach(p=>grid.appendChild(makeCard(p)));
+    document.getElementById('sectionTitle').textContent='Your Playlists'; // Set judul ke Playlist
+    try {
+        const r=await fetch(`https://api.spotify.com/v1/me/playlists?limit=50`,{headers:{Authorization:`Bearer ${t}`}});
+        if(!r.ok) return; const d=await r.json(); d.items.forEach(p=>grid.appendChild(makeCard(p)));
+    } catch (e) {
+        console.error("Failed to load playlists:", e);
+    }
   }
 
   function makeCard(p){
     const c=document.createElement('div'); c.className='card';
     c.onclick=()=>{ playUISound(); openPlaylist(p); };
     const img=document.createElement('img'); img.className='thumb';
-    img.src=p.images && p.images[0]? p.images[0].url : 'https://i.imgur.com/0Z8FQpT.png';
+    img.src=p.images && p.images[0]? p.images[0].url : 'https://placehold.co/150x150/1C1C1E/FFFFFF?text=Playlist';
     const lab=document.createElement('div'); lab.className='label'; lab.textContent=p.name||'Playlist';
     c.append(img,lab); return c;
   }
@@ -441,8 +484,13 @@ body.appleflow-active{background:#000;}
   async function openPlaylist(p){
     grid.style.display='none'; playlistView.style.display='flex';
     document.getElementById('sectionTitle').textContent=p.name;
-    const token=getT(); const r=await fetch(p.tracks.href,{headers:{Authorization:`Bearer ${token}`}});
-    if(!r.ok) return; const d=await r.json(); renderSongs(d.items);
+    const token=getT(); 
+    try {
+        const r=await fetch(p.tracks.href,{headers:{Authorization:`Bearer ${token}`}});
+        if(!r.ok) return; const d=await r.json(); renderSongs(d.items);
+    } catch (e) {
+        console.error("Failed to load songs:", e);
+    }
   }
 
   function renderSongs(items){
@@ -450,7 +498,7 @@ body.appleflow-active{background:#000;}
     items.forEach(i=>{
       const t=i.track; if(!t) return;
       const div=document.createElement('div'); div.className='song-item';
-      const img=document.createElement('img'); img.src=t.album.images[0]?.url||''; img.className='song-cover';
+      const img=document.createElement('img'); img.src=t.album.images[0]?.url||'https://placehold.co/50x50/1C1C1E/FFFFFF?text=Album'; img.className='song-cover';
       const info=document.createElement('div'); info.className='song-info';
       const title=document.createElement('div'); title.className='song-title'; title.textContent=t.name;
       const artist=document.createElement('div'); artist.className='song-artist'; artist.textContent=t.artists.map(a=>a.name).join(', ');
@@ -470,6 +518,9 @@ body.appleflow-active{background:#000;}
     const visibility = state ? 'hidden' : 'visible';
     const opacity = state ? '0' : '1';
     
+    // Tampilkan/Sembunyikan tombol Close di Fullscreen
+    closeFsBtn.style.display = state ? 'flex' : 'none';
+
     // Sembunyikan/Tampilkan Top & Bottom Controls
     topButtons.style.visibility = visibility;
     topButtons.style.opacity = opacity;
@@ -481,6 +532,7 @@ body.appleflow-active{background:#000;}
     if (!state) {
       np.style.display = 'flex';
       if (isReady) {
+        // Hanya tampilkan tombol jika sudah login
         bottomBtns.style.display = 'flex';
         topButtons.style.display = 'flex';
       }
@@ -505,6 +557,12 @@ body.appleflow-active{background:#000;}
       toggleFullscreenCover(!isFullscreen);
   };
   
+  // Handler untuk tombol Close
+  closeFsBtn.onclick = () => {
+      playUISound();
+      toggleFullscreenCover(false);
+  };
+  
   /* Play preview */
   function playPreview(track){
     playUISound();
@@ -517,7 +575,7 @@ body.appleflow-active{background:#000;}
         console.warn("Preview lagu tidak tersedia 😢"); 
     }
     
-    const cover=track.album.images[0]?.url;
+    const cover=track.album.images[0]?.url || 'https://placehold.co/260x260/1C1C1E/FFFFFF?text=No+Cover';
     npC.src=cover; npT.textContent=track.name; npA.textContent=track.artists.map(a=>a.name).join(', ');
     np.style.display='flex';
     adaptAura(cover);
@@ -552,7 +610,7 @@ body.appleflow-active{background:#000;}
       const r=await fetch(`https://api.spotify.com/v1/me/player/currently-playing`,{headers:{Authorization:`Bearer ${t}`}});
       if(r.status===204){ dim.classList.remove('on'); np.style.display='none'; return; }
       const d=await r.json(); if(!d?.item) return;
-      const c=d.item.album.images[0].url;
+      const c=d.item.album.images[0].url || 'https://placehold.co/260x260/1C1C1E/FFFFFF?text=No+Cover';
       
       // Update data Now Playing
       npC.src=c; npT.textContent=d.item.name; npA.textContent=d.item.artists.map(a=>a.name).join(', ');
