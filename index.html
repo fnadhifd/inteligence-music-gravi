@@ -40,10 +40,10 @@ body{
 @keyframes rgbAura{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 @keyframes auraPulse{0%,100%{opacity:.3;filter:blur(35px)}50%{opacity:.6;filter:blur(50px)}}
 
-/* Animated Blur Background */
+/* Animated Blur Background (default) */
 .blur-bg{position:absolute;inset:0;filter:blur(180px);
   background:radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000);
-  z-index:1;transition:background 1.2s ease;animation:mistShift 10s infinite alternate ease-in-out;}
+  z-index:1;transition:background 1.2s ease;}
 @keyframes mistShift{0%{transform:scale(1.05) translate(10px,10px);}100%{transform:scale(1.1) translate(-10px,-10px);}}
 
 /* Overlay */
@@ -103,34 +103,87 @@ body{
   padding:10px 18px;border-radius:12px;cursor:pointer;backdrop-filter:blur(10px);font-weight:600;transition:.3s;}
 .btn:hover{background:rgba(255,255,255,.1);}
 
-/* 🎵 Apple Flow Theme */
-.frame.appleflow::before,
-.frame.appleflow::after {
-  animation: none;
-  background: radial-gradient(circle at 50% 50%, rgba(0, 255, 200, 0.15), rgba(0, 0, 0, 0.9));
-  filter: blur(100px);
+/* =========================
+   🎵 APPLE FLOW – SKYFALL
+   ========================= */
+/* Active container tint + cinematic vignette on edges (dark) */
+.frame.appleflow{
+  background:#000;
+}
+.frame.appleflow::after{
+  /* ganti glow default jadi vignette gelap supaya pusat fokus */
+  background:radial-gradient(120% 120% at 50% 50%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.45) 78%, rgba(0,0,0,0.7) 100%);
+  filter:none;
+  animation:none;
+  opacity:1;
 }
 
-.frame.appleflow .blur-bg {
-  background: radial-gradient(circle at center, rgba(0, 255, 150, 0.08), rgba(0, 0, 0, 0.9));
-  animation: appleMist 8s ease-in-out infinite alternate;
+/* Core mist layer = .blur-bg (we oversize & rotate it) */
+.frame.appleflow .blur-bg{
+  position:absolute;
+  inset:-20%;             /* lebih besar supaya saat rotasi tidak nampak tepi */
+  filter:blur(190px);
+  transition:filter 1s ease, opacity 1s ease;
+  animation:flow-rotate 36s linear infinite; /* rotasi pelan melingkar */
+  opacity:.9;
+  /* base deep greenish black */
+  background:
+    radial-gradient(55% 55% at 50% 50%, rgba(0,22,20,0.95) 0%, rgba(0,0,0,1) 70%);
+  z-index:1;
 }
 
-@keyframes appleMist {
-  0% { transform: scale(1) translate(0, 0); filter: blur(160px); }
-  100% { transform: scale(1.05) translate(-10px, 10px); filter: blur(180px); }
+/* Add two floating cyan clouds via pseudo elements (screen blend) */
+.frame.appleflow .blur-bg::before,
+.frame.appleflow .blur-bg::after{
+  content:'';
+  position:absolute; inset:-10%;
+  mix-blend-mode:screen;
+  border-radius:50%;
+  filter:blur(140px);
+  opacity:.65;
+  background:
+    radial-gradient(closest-side at 60% 45%, rgba(0,255,210,0.22), rgba(0,0,0,0) 68%),
+    radial-gradient(closest-side at 35% 65%, rgba(0,170,150,0.16), rgba(0,0,0,0) 74%);
+}
+.frame.appleflow .blur-bg::before{ animation:flow-rotate 28s linear infinite; }
+.frame.appleflow .blur-bg::after { animation:flow-rotate-rev 44s linear infinite; opacity:.55; }
+
+/* subtle soft beam sweeping across like Apple Music */
+.frame.appleflow .blur-bg:after{
+  /* NOTE: this is different from ::after above (this one is :after of .blur-bg itself),
+     but already used; we used ::before/::after above. So we add a new layer with background-image */
+}
+@keyframes flow-rotate{
+  from{ transform:rotate(0deg) scale(1.06); }
+  to  { transform:rotate(360deg) scale(1.06); }
+}
+@keyframes flow-rotate-rev{
+  from{ transform:rotate(360deg) scale(1.04); }
+  to  { transform:rotate(0deg)   scale(1.04); }
 }
 
+/* UI glass sharper when Apple Flow active */
 .frame.appleflow .content,
 .frame.appleflow .buttons,
-.frame.appleflow .top-buttons {
-  backdrop-filter: blur(20px);
-  transition: all 0.8s ease-in-out;
+.frame.appleflow .top-buttons{
+  backdrop-filter:blur(22px);
+  transition:backdrop-filter 1s ease;
 }
 
-body.appleflow-active {
-  background: linear-gradient(180deg, #001010 0%, #000 100%);
-  transition: background 1s ease-in-out;
+/* Optional subtle body tint */
+body.appleflow-active{
+  background:radial-gradient(120% 120% at 50% 50%, #000 0%, #000 100%);
+}
+
+/* Keep original RGB animations definitions above */
+
+/* Accessibility: prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce){
+  .frame.appleflow .blur-bg,
+  .frame.appleflow .blur-bg::before,
+  .frame.appleflow .blur-bg::after{
+    animation:none !important;
+  }
 }
 </style>
 </head>
@@ -196,7 +249,7 @@ body.appleflow-active {
   /* Intro */
   const intro = document.getElementById('intro'),
     frame = document.getElementById('frame'),
-    bottomBtns = document.getElementById('bottomBtns'); // ⬅️ Tambahkan ini
+    bottomBtns = document.getElementById('bottomBtns');
   
   document.getElementById('startBtn').onclick = () => {
     audioCtx.resume();
@@ -205,18 +258,39 @@ body.appleflow-active {
     setTimeout(() => {
       intro.style.display = 'none';
       frame.style.opacity = '1';
-      bottomBtns.style.display = 'flex'; // ⬅️ Tombol baru muncul setelah start
+      bottomBtns.style.display = 'flex';
     }, 2000);
   };
   
+  /* Apple Flow: toggle tema Skyfall */
   document.getElementById('appleBtn').onclick = () => {
     playUISound();
     frame.classList.remove('rgb');
+    frame.classList.toggle('appleflow');
+    document.body.classList.toggle('appleflow-active');
+
+    // sentuh blurBg supaya langsung terasa saat pertama kali aktif
+    const blurBg = document.getElementById('blurBg');
+    if (frame.classList.contains('appleflow')) {
+      blurBg.style.animation = 'flow-rotate 36s linear infinite';
+      blurBg.style.filter = 'blur(190px)';
+    } else {
+      blurBg.style.animation = '';
+      blurBg.style.filter = 'blur(180px)';
+      blurBg.style.background = 'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
+    }
   };
   
+  /* RGB Mode (tetap seperti semula) */
   document.getElementById('rgbBtn').onclick = () => {
     playUISound();
     frame.classList.add('rgb');
+    frame.classList.remove('appleflow');
+    document.body.classList.remove('appleflow-active');
+    const blurBg = document.getElementById('blurBg');
+    blurBg.style.animation = '';
+    blurBg.style.background = 'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
+    blurBg.style.filter = 'blur(180px)';
   };
   
   /* Spotify Auth */
@@ -445,8 +519,9 @@ body.appleflow-active {
       g = Math.round(g / cnt);
       b = Math.round(b / cnt);
       const gradient = `radial-gradient(circle at center, rgba(${r},${g},${b},0.55), rgba(0,0,0,0.9))`;
-      blurBg.style.background = gradient;
+      document.getElementById('blurBg').style.background = gradient;
     };
   }
-  </script>
-  
+</script>
+</body>
+</html>
