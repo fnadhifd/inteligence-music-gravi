@@ -249,6 +249,19 @@ body.fullscreen-lock, html.fullscreen-lock { overflow: hidden !important; }
   transition: opacity .5s ease;
 }
 
+/* biar scroll di content lancar di iPhone */
+#content {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* saat fullscreen, content bisa scroll kalau unlock aktif */
+.frame.fullscreen .content {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+}
+
 /* ===== Scroll Toggle Button (muncul saat fullscreen) ===== */
 .scroll-toggle {
   position: absolute;
@@ -509,18 +522,20 @@ body.fullscreen-lock, html.fullscreen-lock { overflow: hidden !important; }
 
   /* ===== Fullscreen behaviour ===== */
 
-  function lockScroll(){
-    document.body.style.overflow='hidden';
-    document.documentElement.style.overflow='hidden';
-    document.body.classList.add('fullscreen-lock');
-    document.documentElement.classList.add('fullscreen-lock');
-  }
-  function unlockScroll(){
-    document.body.style.overflow='';
-    document.documentElement.style.overflow='';
-    document.body.classList.remove('fullscreen-lock');
-    document.documentElement.classList.remove('fullscreen-lock');
-  }
+  function lockScroll() {
+  const content = document.getElementById('content');
+  content.style.overflow = 'hidden';
+  content.style.touchAction = 'none'; // cegah gesture scroll
+  document.body.style.overflow = 'hidden'; // optional
+}
+
+function unlockScroll() {
+  const content = document.getElementById('content');
+  content.style.overflow = 'auto';
+  content.style.webkitOverflowScrolling = 'touch'; // aktifkan momentum scroll di iOS
+  content.style.touchAction = 'auto'; // izinkan swipe
+  document.body.style.overflow = ''; // normal lagi
+}
 
   let lastAuraBg = '';
 const scrollToggle = document.getElementById('scrollToggle');
@@ -583,16 +598,21 @@ npC.addEventListener('click', ()=>{
 scrollToggle.onclick = () => {
   playUISound();
   scrollLocked = !scrollLocked;
+  const content = document.getElementById('content');
+
   if (scrollLocked) {
     lockScroll();
-    document.getElementById('content').style.overflow='hidden';
     scrollToggle.textContent = '🔓 Unlock Scroll';
   } else {
     unlockScroll();
-    document.getElementById('content').style.overflow='auto';
     scrollToggle.textContent = '🔒 Lock Scroll';
+    // Pastikan Safari benar-benar update layout
+    requestAnimationFrame(() => {
+      content.scrollTop = 1;
+    });
   }
 };
+
 
 
   /* Aura adapt + blur – generate gradient yang enak untuk fullscreen */
