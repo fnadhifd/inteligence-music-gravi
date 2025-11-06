@@ -109,32 +109,6 @@ body{
   padding:10px 18px;border-radius:12px;cursor:pointer;backdrop-filter:blur(10px);font-weight:600;transition:.3s;}
 .btn:hover{background:rgba(255,255,255,.1);}
 
-/* ===== Scroll Toggle Button ===== */
-.scroll-toggle {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #fff;
-  padding: 10px 16px;
-  border-radius: 14px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  backdrop-filter: blur(10px);
-  z-index: 40;
-  transition: background .3s, transform .3s;
-}
-.scroll-toggle:hover {
-  background: rgba(255,255,255,0.2);
-  transform: scale(1.05);
-}
-
-/* tampil hanya di fullscreen */
-.frame.fullscreen .scroll-toggle {
-  display: block !important;
-}
-
 /* =========================
    🎵 APPLE FLOW – SKYFALL (OPTIMIZED)
    ========================= */
@@ -290,7 +264,6 @@ body.fullscreen-lock, html.fullscreen-lock { overflow: hidden !important; }
 <div class="frame" id="frame">
   <div class="blur-bg" id="blurBg"></div>
   <div class="dim-overlay" id="dim"></div>
-  <button id="scrollToggle" class="scroll-toggle" style="display:none;">🔒 Lock Scroll</button>
 
   <div class="top-buttons" id="topButtons" style="display:none;">
     <button id="logoutBtn" class="logout-btn">Log Out</button>
@@ -514,14 +487,13 @@ body.fullscreen-lock, html.fullscreen-lock { overflow: hidden !important; }
   /* ===== Fullscreen behaviour ===== */
 
   function lockScroll(){
-  document.body.classList.add('fullscreen-lock');
-  document.documentElement.classList.add('fullscreen-lock');
+  document.body.style.overflow='hidden';
+  document.documentElement.style.overflow='hidden';
 }
 function unlockScroll(){
-  document.body.classList.remove('fullscreen-lock');
-  document.documentElement.classList.remove('fullscreen-lock');
+  document.body.style.overflow='';
+  document.documentElement.style.overflow='';
 }
-
 
 function enterFullscreen(){
   frame.classList.add('fullscreen');
@@ -556,24 +528,11 @@ function exitFullscreen(){
 }
 
 
-  // Toggle Lock Scroll manual
-const scrollToggle = document.getElementById('scrollToggle');
-let scrollLocked = true;
-
-scrollToggle.onclick = () => {
-  playUISound();
-  scrollLocked = !scrollLocked;
-  if (scrollLocked) {
-    lockScroll();
-    document.getElementById('content').style.overflow = 'hidden';
-    scrollToggle.textContent = '🔒 Lock Scroll';
-  } else {
-    unlockScroll();
-    document.getElementById('content').style.overflow = 'auto';
-    scrollToggle.textContent = '🔓 Unlock Scroll';
-  }
-};
-
+  // Toggle on cover click
+  npC.addEventListener('click', ()=>{
+    playUISound();
+    if(frame.classList.contains('fullscreen')) exitFullscreen(); else enterFullscreen();
+  });
 
   /* Aura adapt + blur – generate gradient yang enak untuk fullscreen */
   function adaptAura(u){
