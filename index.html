@@ -63,8 +63,8 @@ body.scroll-locked {
 @keyframes rgbAura{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 @keyframes auraPulse{0%,100%{opacity:.3;filter:blur(35px)}50%{opacity:.6;filter:blur(50px)}}
 
-/* Animated Blur Background (default) - Disesuaikan untuk blur lebih halus dan area lebih besar */
-.blur-bg{position:absolute;inset:-20px;filter:blur(100px); /* Increased blur and larger inset */
+/* Animated Blur Background (default) */
+.blur-bg{position:absolute;inset:0;filter:blur(80px);
   background:radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000);
   z-index:1;transition:background 600ms ease, opacity 400ms ease;}
 /* Overlay */
@@ -139,33 +139,6 @@ body.scroll-locked {
   display: flex;
   flex-direction: column;
 }
-.np.fullscreen .close-btn {
-    display: flex; /* Tampilkan tombol Close */
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border: none;
-    padding: 10px 14px;
-    border-radius: 50%;
-    cursor: pointer;
-    backdrop-filter: blur(15px);
-    font-size: 1.2rem;
-    line-height: 1;
-    font-weight: 300;
-    transition: background 0.3s;
-    z-index: 60; /* Pastikan di atas cover */
-    width: 40px;
-    height: 40px;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
-}
-.np.fullscreen .close-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
 
 .np.fullscreen .np-cover {
   /* Ukuran medium yang baru (sekitar 70% dari viewport height, max 500px) */
@@ -257,13 +230,6 @@ body.appleflow-active{background:#000;}
   .np.fullscreen .np-artist {
     font-size: 1.2rem; /* Artis lebih kecil di ponsel */
   }
-  .np.fullscreen .close-btn {
-      top: 15px;
-      right: 15px;
-      width: 36px;
-      height: 36px;
-      font-size: 1rem;
-  }
 }
 </style>
 </head>
@@ -296,7 +262,6 @@ body.appleflow-active{background:#000;}
     
     <!-- Bagian NP (Now Playing) -->
     <div id="nowPlaying" class="np" style="display:none;">
-      <button id="closeFullscreenBtn" class="close-btn" style="display: none;">✕</button>
       <img id="npCover" class="np-cover" src="" alt="Album Cover">
       <div class="np-title" id="npTitle"></div>
       <div class="np-artist" id="npArtist"></div>
@@ -373,7 +338,7 @@ body.appleflow-active{background:#000;}
       // back to default blur bg
       blurBg.style.animation='appleAura 10s ease-in-out infinite'; // Kembalikan animasi default
       blurBg.style.opacity='1';
-      blurBg.style.filter='blur(100px)'; // Disesuaikan
+      blurBg.style.filter='blur(80px)';
       blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
     }
   };
@@ -395,7 +360,7 @@ body.appleflow-active{background:#000;}
     // Set blur bg ke default
     blurBg.style.animation='rgbAura 4s ease-in-out infinite';
     blurBg.style.opacity='1';
-    blurBg.style.filter='blur(100px)'; // Disesuaikan
+    blurBg.style.filter='blur(80px)';
     blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
   };
 
@@ -419,7 +384,6 @@ body.appleflow-active{background:#000;}
         npT=document.getElementById('npTitle'),
         npA=document.getElementById('npArtist');
   const dim=document.getElementById('dim');
-  const closeFsBtn = document.getElementById('closeFullscreenBtn'); // Ambil tombol baru
 
   let audioPreview=new Audio();
   const url=new URLSearchParams(location.search), code=url.get('code');
@@ -434,8 +398,6 @@ body.appleflow-active{background:#000;}
       };
     }
   }else{
-    // Ini hanya untuk demo, API Token di canvas akan di-handle oleh environment
-    // Dalam kasus nyata, Anda perlu server-side proxy untuk menukar code dengan token
     fetch(`/api/token?code=${code}`).then(r=>r.json()).then(d=>{
       saveT(d.access_token);
       history.replaceState({},document.title,location.pathname);
@@ -463,20 +425,15 @@ body.appleflow-active{background:#000;}
   /* Load playlists */
   async function loadPlaylists(t){
     grid.style.display='grid'; grid.innerHTML="";
-    document.getElementById('sectionTitle').textContent='Your Playlists'; // Set judul ke Playlist
-    try {
-        const r=await fetch(`https://api.spotify.com/v1/me/playlists?limit=50`,{headers:{Authorization:`Bearer ${t}`}});
-        if(!r.ok) return; const d=await r.json(); d.items.forEach(p=>grid.appendChild(makeCard(p)));
-    } catch (e) {
-        console.error("Failed to load playlists:", e);
-    }
+    const r=await fetch(`https://api.spotify.com/v1/me/playlists?limit=50`,{headers:{Authorization:`Bearer ${t}`}});
+    if(!r.ok) return; const d=await r.json(); d.items.forEach(p=>grid.appendChild(makeCard(p)));
   }
 
   function makeCard(p){
     const c=document.createElement('div'); c.className='card';
     c.onclick=()=>{ playUISound(); openPlaylist(p); };
     const img=document.createElement('img'); img.className='thumb';
-    img.src=p.images && p.images[0]? p.images[0].url : 'https://placehold.co/150x150/1C1C1E/FFFFFF?text=Playlist';
+    img.src=p.images && p.images[0]? p.images[0].url : 'https://i.imgur.com/0Z8FQpT.png';
     const lab=document.createElement('div'); lab.className='label'; lab.textContent=p.name||'Playlist';
     c.append(img,lab); return c;
   }
@@ -484,13 +441,8 @@ body.appleflow-active{background:#000;}
   async function openPlaylist(p){
     grid.style.display='none'; playlistView.style.display='flex';
     document.getElementById('sectionTitle').textContent=p.name;
-    const token=getT(); 
-    try {
-        const r=await fetch(p.tracks.href,{headers:{Authorization:`Bearer ${token}`}});
-        if(!r.ok) return; const d=await r.json(); renderSongs(d.items);
-    } catch (e) {
-        console.error("Failed to load songs:", e);
-    }
+    const token=getT(); const r=await fetch(p.tracks.href,{headers:{Authorization:`Bearer ${token}`}});
+    if(!r.ok) return; const d=await r.json(); renderSongs(d.items);
   }
 
   function renderSongs(items){
@@ -498,7 +450,7 @@ body.appleflow-active{background:#000;}
     items.forEach(i=>{
       const t=i.track; if(!t) return;
       const div=document.createElement('div'); div.className='song-item';
-      const img=document.createElement('img'); img.src=t.album.images[0]?.url||'https://placehold.co/50x50/1C1C1E/FFFFFF?text=Album'; img.className='song-cover';
+      const img=document.createElement('img'); img.src=t.album.images[0]?.url||''; img.className='song-cover';
       const info=document.createElement('div'); info.className='song-info';
       const title=document.createElement('div'); title.className='song-title'; title.textContent=t.name;
       const artist=document.createElement('div'); artist.className='song-artist'; artist.textContent=t.artists.map(a=>a.name).join(', ');
@@ -518,9 +470,6 @@ body.appleflow-active{background:#000;}
     const visibility = state ? 'hidden' : 'visible';
     const opacity = state ? '0' : '1';
     
-    // Tampilkan/Sembunyikan tombol Close di Fullscreen
-    closeFsBtn.style.display = state ? 'flex' : 'none';
-
     // Sembunyikan/Tampilkan Top & Bottom Controls
     topButtons.style.visibility = visibility;
     topButtons.style.opacity = opacity;
@@ -532,7 +481,6 @@ body.appleflow-active{background:#000;}
     if (!state) {
       np.style.display = 'flex';
       if (isReady) {
-        // Hanya tampilkan tombol jika sudah login
         bottomBtns.style.display = 'flex';
         topButtons.style.display = 'flex';
       }
@@ -557,12 +505,6 @@ body.appleflow-active{background:#000;}
       toggleFullscreenCover(!isFullscreen);
   };
   
-  // Handler untuk tombol Close
-  closeFsBtn.onclick = () => {
-      playUISound();
-      toggleFullscreenCover(false);
-  };
-  
   /* Play preview */
   function playPreview(track){
     playUISound();
@@ -575,7 +517,7 @@ body.appleflow-active{background:#000;}
         console.warn("Preview lagu tidak tersedia 😢"); 
     }
     
-    const cover=track.album.images[0]?.url || 'https://placehold.co/260x260/1C1C1E/FFFFFF?text=No+Cover';
+    const cover=track.album.images[0]?.url;
     npC.src=cover; npT.textContent=track.name; npA.textContent=track.artists.map(a=>a.name).join(', ');
     np.style.display='flex';
     adaptAura(cover);
@@ -608,36 +550,9 @@ body.appleflow-active{background:#000;}
   async function pollNowPlaying(t){
     try{
       const r=await fetch(`https://api.spotify.com/v1/me/player/currently-playing`,{headers:{Authorization:`Bearer ${t}`}});
-      if(r.status===204){ 
-        dim.classList.remove('on'); 
-        np.style.display='none'; 
-        
-        // --- Reset Blur BG when no song is playing (kembali ke aura animasi default) ---
-        if(!frame.classList.contains('appleflow')){
-          blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
-          blurBg.style.filter='blur(100px)';
-          blurBg.style.opacity='1';
-          if(frame.classList.contains('rgb')){
-             blurBg.style.animation='rgbAura 4s ease-in-out infinite';
-          } else {
-             blurBg.style.animation='appleAura 10s ease-in-out infinite';
-          }
-        } else {
-          // Jika mode appleflow, kembalikan gradient khasnya
-          blurBg.style.background =
-            'radial-gradient(45% 45% at 52% 48%, #002622 0%, #000 70%),' +
-            'radial-gradient(38% 38% at 62% 42%, rgba(0,232,208,.20), rgba(0,0,0,0) 70%),' +
-            'radial-gradient(32% 32% at 38% 62%, rgba(0,190,170,.16), rgba(0,0,0,0) 72%)';
-          blurBg.style.filter='blur(70px)';
-          blurBg.style.animation='af-rotate 32s linear infinite';
-          blurBg.style.opacity='0.95';
-        }
-        // --- End Reset ---
-
-        return; 
-      }
+      if(r.status===204){ dim.classList.remove('on'); np.style.display='none'; return; }
       const d=await r.json(); if(!d?.item) return;
-      const c=d.item.album.images[0].url || 'https://placehold.co/260x260/1C1C1E/FFFFFF?text=No+Cover';
+      const c=d.item.album.images[0].url;
       
       // Update data Now Playing
       npC.src=c; npT.textContent=d.item.name; npA.textContent=d.item.artists.map(a=>a.name).join(', ');
@@ -660,9 +575,6 @@ body.appleflow-active{background:#000;}
   function adaptAura(u){
     if (!blurBg) return; 
     
-    // Hentikan jika sedang dalam mode Apple Flow (karena Apple Flow punya background yang berbeda)
-    if(frame.classList.contains('appleflow')) return; 
-
     const i=new Image(); i.crossOrigin='anonymous'; i.src=u;
     i.onload=()=>{
       const c=document.createElement('canvas'), x=c.getContext('2d',{willReadFrequently:true});
@@ -671,19 +583,21 @@ body.appleflow-active{background:#000;}
       let r=0,g=0,b=0,cnt=0;
       for(let k=0;k<dt.length;k+=4){ r+=dt[k]; g+=dt[k+1]; b+=dt[k+2]; cnt++; }
       r=Math.round(r/cnt); g=Math.round(g/cnt); b=Math.round(b/cnt);
-      
-      // Buat gradient yang lebih halus dan lebih merata (seperti Apple Music)
-      // Satu radial gradient besar yang memudar ke hitam pekat
+      // buat dua spot: core & highlight lembut
       const newAuraBg =
-        `radial-gradient(circle at center, rgba(${r},${g},${b},0.40) 0%, rgba(0,0,0,0.88) 50%, #000000 100%)`;
+        `radial-gradient(46% 46% at 50% 50%, rgba(${r},${g},${b},0.45) 0%, rgba(0,0,0,0.92) 68%),`+
+        `radial-gradient(30% 30% at 70% 40%, rgba(${r},${g},${b},0.22), rgba(0,0,0,0) 70%)`;
       
       // apply langsung ke blurBg
       blurBg.style.background = newAuraBg;
       
-      // Pastikan blur-bg menggunakan filter blur yang tinggi dan matikan animasi aura default
-      blurBg.style.filter='blur(100px)'; 
-      blurBg.style.opacity='1';
-      blurBg.style.animation='none';
+      // Reset animasi agar terlihat fresh, jika tidak dalam mode Apple Flow
+      if(!frame.classList.contains('appleflow')){
+          blurBg.style.animation='appleAura 10s ease-in-out infinite';
+          if(frame.classList.contains('rgb')){
+             blurBg.style.animation='rgbAura 4s ease-in-out infinite';
+          }
+      }
     };
   }
 </script>
