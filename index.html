@@ -8,7 +8,14 @@
 :root{
   --m-blue:#007bff;--m-darkblue:#002bff;--m-red:#ff003c;
   --m-purple:#a000ff;--gravi-cyan:#00fff2;--gravi-white:#e6f4ff;
+
+  /* Apple Flow palette */
+  --af-deep:#001917;       /* hijau-hitam pekat */
+  --af-core:#002622;       /* hijau tua gelap */
+  --af-cyan-soft: rgba(0,232,208,.20);
+  --af-cyan-soft2: rgba(0,190,170,.16);
 }
+*{box-sizing:border-box}
 body{
   margin:0;background:#000;display:flex;justify-content:center;align-items:center;
   height:100vh;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#fff;
@@ -40,16 +47,13 @@ body{
 @keyframes rgbAura{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 @keyframes auraPulse{0%,100%{opacity:.3;filter:blur(35px)}50%{opacity:.6;filter:blur(50px)}}
 
-/* Animated Blur Background */
-.blur-bg{position:absolute;inset:0;filter:blur(160px);
+/* Animated Blur Background (default) */
+.blur-bg{position:absolute;inset:0;filter:blur(80px);
   background:radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000);
-  z-index:1;transition:background 1.2s ease,opacity 1s ease;}
-@keyframes af-rotate{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-@keyframes fs-rotate{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-
+  z-index:1;transition:background 600ms ease, opacity 400ms ease;}
 /* Overlay */
 .dim-overlay{position:absolute;inset:0;border-radius:38px;background:rgba(0,0,0,.25);
-  opacity:0;transition:opacity .6s ease;pointer-events:none;z-index:2;}
+  opacity:0;transition:opacity .4s ease;pointer-events:none;z-index:2;}
 .dim-overlay.on{opacity:.45;}
 
 /* Buttons */
@@ -75,21 +79,112 @@ body{
 .thumb{width:100%;aspect-ratio:1/1;border-radius:16px;object-fit:cover;box-shadow:0 8px 24px rgba(0,0,0,.35);}
 .label{margin-top:10px;font-weight:600;opacity:.9;text-align:center;}
 
+/* Playlist view + search */
+.playlist-view{display:none;flex-direction:column;align-items:center;width:100%;animation:fadeInView .8s ease forwards;}
+@keyframes fadeInView{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.search-bar{width:min(500px,90%);padding:10px 16px;border:none;border-radius:16px;margin-bottom:20px;
+  background:rgba(255,255,255,.08);color:white;backdrop-filter:blur(8px);font-size:1rem;outline:none;}
+.song-list{display:flex;flex-direction:column;gap:10px;width:min(700px,92vw);}
+.song-item{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.05);padding:10px 14px;
+  border-radius:14px;backdrop-filter:blur(8px);cursor:pointer;transition:background .3s,transform .2s;}
+.song-item:hover{background:rgba(255,255,255,.12);transform:scale(1.02);}
+.song-cover{width:50px;height:50px;border-radius:10px;object-fit:cover;}
+.song-info{flex:1;}
+.song-title{font-weight:600;}
+.song-artist{font-size:.85rem;opacity:.7;}
+.back-btn{background:rgba(255,255,255,.08);border:none;color:white;padding:10px 18px;border-radius:12px;
+  margin-bottom:20px;cursor:pointer;backdrop-filter:blur(8px);font-weight:600;transition:.3s;}
+.back-btn:hover{background:rgba(255,255,255,.15);}
+
 /* Now Playing */
-.np{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:10px;transition:all .8s ease;}
+.np{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:10px;}
 .np-cover{width:260px;height:260px;border-radius:22px;object-fit:cover;box-shadow:0 20px 60px rgba(0,0,0,.6);
-  cursor:pointer;transition:transform .8s ease,opacity .8s ease;}
+  cursor:pointer;transition:transform .55s cubic-bezier(.2,.8,.2,1), box-shadow .55s;}
 .np-title{font-size:1.25rem;font-weight:800;}
 .np-artist{opacity:.75;}
-.frame.fullscreen .np{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(1.1);z-index:30;}
-.frame.fullscreen .np-cover{width:400px;height:400px;box-shadow:0 0 80px rgba(0,0,0,.7);}
-.frame.fullscreen .np-title,.frame.fullscreen .np-artist{display:none;}
 
-/* Buttons bawah */
+/* Bottom buttons */
 .buttons{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:20;}
 .btn{background:rgba(30,30,30,.85);color:#fff;border:1px solid rgba(255,255,255,.2);
   padding:10px 18px;border-radius:12px;cursor:pointer;backdrop-filter:blur(10px);font-weight:600;transition:.3s;}
 .btn:hover{background:rgba(255,255,255,.1);}
+
+/* =========================
+   🎵 APPLE FLOW – SKYFALL (OPTIMIZED)
+   ========================= */
+.frame.appleflow::before{animation:none;opacity:0;}
+.frame.appleflow::after{
+  background: radial-gradient(130% 130% at 50% 50%,
+              rgba(0,0,0,0) 45%,
+              rgba(0,0,0,.45) 78%,
+              rgba(0,0,0,.75) 100%);
+  filter:none;animation:none;opacity:1;
+}
+.frame.appleflow{
+  background: radial-gradient(80% 80% at 50% 50%, var(--af-deep) 0%, #000 70%);
+}
+.frame.appleflow .blur-bg{
+  inset:-12%;
+  background:
+    radial-gradient(45% 45% at 52% 48%, var(--af-core) 0%, #000 70%),
+    radial-gradient(38% 38% at 62% 42%, var(--af-cyan-soft), rgba(0,0,0,0) 70%),
+    radial-gradient(32% 32% at 38% 62%, var(--af-cyan-soft2), rgba(0,0,0,0) 72%);
+  filter: blur(70px);
+  transform: rotate(0deg) scale(1.04); will-change: transform;
+  animation: af-rotate 32s linear infinite;
+  opacity:.95;
+  transition: opacity .6s ease, transform .6s ease, background .8s ease;
+}
+@keyframes af-rotate{from{transform:rotate(0deg) scale(1.04)}to{transform:rotate(360deg) scale(1.04)}}
+.frame.appleflow .content,.frame.appleflow .buttons,.frame.appleflow .top-buttons{backdrop-filter:blur(20px);transition:backdrop-filter .6s ease;}
+body.appleflow-active{background:#000;}
+@media (prefers-reduced-motion: reduce){.frame.appleflow .blur-bg{animation:none !important;}}
+
+/* =========================
+   ✅ FULLSCREEN PLAYER (SMOOTH)
+   ========================= */
+.frame.fullscreen{
+  /* gunakan latar dari adaptAura; vignette lembut di pinggir */
+}
+.frame.fullscreen::before{opacity:0}
+.frame.fullscreen::after{
+  background: radial-gradient(130% 130% at 50% 50%,
+              rgba(0,0,0,0) 42%,
+              rgba(0,0,0,.40) 80%,
+              rgba(0,0,0,.70) 100%);
+  filter:none;animation:none;opacity:1;
+}
+.frame.fullscreen .content{
+  /* sembunyikan elemen lain pelan */
+  opacity:.98; transition: opacity .35s ease;
+}
+.frame.fullscreen .grid,
+.frame.fullscreen .playlist-view,
+.frame.fullscreen .title,
+.frame.fullscreen .connect-btn{opacity:0;pointer-events:none}
+
+/* Posisikan cover ke tengah, besar, smooth */
+.frame.fullscreen .np{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:12;
+}
+.frame.fullscreen .np-cover{
+  width:min(70vmin,520px);height:min(70vmin,520px);
+  transform:translateZ(0) scale(1.02);
+  box-shadow:0 40px 120px rgba(0,0,0,.55);
+  border-radius:24px;
+}
+.frame.fullscreen .np-title,.frame.fullscreen .np-artist{display:none}
+
+/* Layer kabut adaptif saat fullscreen */
+.frame.fullscreen .blur-bg{
+  inset:-14%;
+  filter:blur(70px);
+  will-change: transform, opacity;
+  animation: fs-rotate 36s linear infinite;
+  opacity:.95;
+  transition: opacity .6s ease, transform .6s ease, background .8s ease;
+}
+@keyframes fs-rotate{from{transform:rotate(0deg) scale(1.05)}to{transform:rotate(360deg) scale(1.05)}}
 </style>
 </head>
 <body>
@@ -113,6 +208,12 @@ body{
     <button id="connectSpotify" class="connect-btn">Connect Spotify</button>
     <div id="playlistGrid" class="grid" style="display:none;"></div>
 
+    <div id="playlistView" class="playlist-view">
+      <button id="backBtn" class="back-btn">⬅ Kembali</button>
+      <input id="searchBar" class="search-bar" type="text" placeholder="Cari lagu di playlist ini..."/>
+      <div id="songList" class="song-list"></div>
+    </div>
+
     <div id="nowPlaying" class="np" style="display:none;">
       <img id="npCover" class="np-cover" src="" alt="">
       <div class="np-title" id="npTitle"></div>
@@ -126,255 +227,247 @@ body{
   <button id="rgbBtn" class="btn">RGB Live</button>
 </div>
 
-
 <script>
-  /* 🎵 Inisialisasi Audio UI */
+  /* Intro Sound */
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   let uiBuffer;
-  fetch('audio/intro.mp3')
-    .then(r => r.arrayBuffer())
-    .then(b => audioCtx.decodeAudioData(b))
-    .then(d => (uiBuffer = d));
-  
-  function playUISound(v = 0.3) {
-    if (!uiBuffer) return;
-    const src = audioCtx.createBufferSource();
-    const g = audioCtx.createGain();
-    g.gain.value = v;
-    src.buffer = uiBuffer;
-    src.connect(g).connect(audioCtx.destination);
-    src.start(0);
-  }
-  
-  /* 🌈 Elemen Utama */
-  const intro = document.getElementById('intro');
-  const frame = document.getElementById('frame');
-  const bottomBtns = document.getElementById('bottomBtns');
+  fetch('audio/intro.mp3').then(r=>r.arrayBuffer()).then(b=>audioCtx.decodeAudioData(b)).then(d=>(uiBuffer=d));
+  function playUISound(v=0.3){ if(!uiBuffer) return; const s=audioCtx.createBufferSource(); const g=audioCtx.createGain(); g.gain.value=v; s.buffer=uiBuffer; s.connect(g).connect(audioCtx.destination); s.start(0); }
+
+  /* Intro */
+  const intro = document.getElementById('intro'),
+        frame = document.getElementById('frame'),
+        bottomBtns = document.getElementById('bottomBtns');
   const blurBg = document.getElementById('blurBg');
-  const np = document.getElementById('nowPlaying');
-  const npC = document.getElementById('npCover');
-  const npT = document.getElementById('npTitle');
-  const npA = document.getElementById('npArtist');
-  const dim = document.getElementById('dim');
-  
-  let lastAuraBg = '';
-  let audioPreview = new Audio();
-  
-  /* 🚀 Intro Start */
-  document.getElementById('startBtn').onclick = () => {
-    audioCtx.resume();
-    playUISound();
-    intro.style.opacity = '0';
-    setTimeout(() => {
-      intro.style.display = 'none';
-      frame.style.opacity = '1';
-      bottomBtns.style.display = 'flex';
-    }, 2000);
+  document.getElementById('startBtn').onclick=()=>{
+    audioCtx.resume(); playUISound();
+    intro.style.opacity='0';
+    setTimeout(()=>{ intro.style.display='none'; frame.style.opacity='1'; bottomBtns.style.display='flex'; },2000);
   };
-  
-  /* 🎨 Apple Flow & RGB Mode */
-  document.getElementById('appleBtn').onclick = () => {
+
+  /* Apple Flow – toggle super ringan (restore gradient) */
+  document.getElementById('appleBtn').onclick=()=>{
     playUISound();
     frame.classList.remove('rgb');
     frame.classList.toggle('appleflow');
-    if (frame.classList.contains('appleflow')) {
+    document.body.classList.toggle('appleflow-active');
+
+    if(frame.classList.contains('appleflow')){
+      // set ulang gradient Apple Flow
       blurBg.style.background =
         'radial-gradient(45% 45% at 52% 48%, #002622 0%, #000 70%),' +
-        'radial-gradient(38% 38% at 62% 42%, rgba(0,232,208,.20), rgba(0,0,0,0) 70%)';
-      blurBg.style.animation = 'af-rotate 32s linear infinite';
-    } else {
-      blurBg.style.animation = '';
-      blurBg.style.background = 'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
+        'radial-gradient(38% 38% at 62% 42%, rgba(0,232,208,.20), rgba(0,0,0,0) 70%),' +
+        'radial-gradient(32% 32% at 38% 62%, rgba(0,190,170,.16), rgba(0,0,0,0) 72%)';
+      blurBg.style.filter='blur(70px)';
+      blurBg.style.animation='af-rotate 32s linear infinite';
+      blurBg.style.opacity='0.95';
+    }else{
+      // back to default
+      blurBg.style.animation='';
+      blurBg.style.opacity='1';
+      blurBg.style.filter='blur(80px)';
+      blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
     }
   };
-  
-  document.getElementById('rgbBtn').onclick = () => {
+
+  /* RGB Mode */
+  document.getElementById('rgbBtn').onclick=()=>{
     playUISound();
     frame.classList.add('rgb');
-    frame.classList.remove('appleflow', 'fullscreen');
-    blurBg.style.animation = '';
-    blurBg.style.background = 'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
+    frame.classList.remove('appleflow','fullscreen');
+    document.body.classList.remove('appleflow-active');
+    blurBg.style.animation=''; blurBg.style.opacity='1';
+    blurBg.style.filter='blur(80px)';
+    blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
   };
-  
-  /* 🎧 Spotify Auth */
-  const CLIENT_ID = "a4c46dd220374fc586a40f8450993f5a";
-  const REDIRECT_URI = "https://inteligence-music-gravi.vercel.app/";
-  const SCOPES = "user-read-currently-playing user-read-playback-state playlist-read-private user-library-read";
-  
-  const saveT = t => localStorage.setItem('spotify_token', t);
-  const getT = () => localStorage.getItem('spotify_token');
-  
-  const connectBtn = document.getElementById('connectSpotify');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const changeBtn = document.getElementById('changeAccount');
-  const topButtons = document.getElementById('topButtons');
-  const grid = document.getElementById('playlistGrid');
-  
-  const url = new URLSearchParams(location.search);
-  const code = url.get('code');
-  
-  if (!code) {
-    const t = getT();
-    if (t) onReady(t);
-    else {
-      connectBtn.onclick = () => {
+
+  /* Spotify Auth */
+  const CLIENT_ID="a4c46dd220374fc586a40f8450993f5a";
+  const REDIRECT_URI="https://inteligence-music-gravi.vercel.app/";
+  const SCOPES="user-read-currently-playing user-read-playback-state playlist-read-private user-library-read";
+  const saveT=t=>localStorage.setItem('spotify_token',t), getT=()=>localStorage.getItem('spotify_token');
+
+  const connectBtn=document.getElementById('connectSpotify');
+  const logoutBtn=document.getElementById('logoutBtn');
+  const changeBtn=document.getElementById('changeAccount');
+  const topButtons=document.getElementById('topButtons');
+  const grid=document.getElementById('playlistGrid');
+  const playlistView=document.getElementById('playlistView');
+  const backBtn=document.getElementById('backBtn');
+  const searchBar=document.getElementById('searchBar');
+  const songList=document.getElementById('songList');
+  const np=document.getElementById('nowPlaying');
+  const npC=document.getElementById('npCover'),
+        npT=document.getElementById('npTitle'),
+        npA=document.getElementById('npArtist');
+  const dim=document.getElementById('dim');
+  let audioPreview=new Audio();
+  const url=new URLSearchParams(location.search), code=url.get('code');
+
+  if(!code){
+    const t=getT();
+    if(t) onReady(t);
+    else{
+      connectBtn.onclick=()=>{
         playUISound();
-        location.href = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(
-          REDIRECT_URI
-        )}&scope=${encodeURIComponent(SCOPES)}`;
+        location.href=`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`;
       };
     }
-  } else {
-    fetch(`/api/token?code=${code}`)
-      .then(r => r.json())
-      .then(d => {
-        saveT(d.access_token);
-        history.replaceState({}, document.title, location.pathname);
-        onReady(d.access_token);
-      });
+  }else{
+    fetch(`/api/token?code=${code}`).then(r=>r.json()).then(d=>{
+      saveT(d.access_token);
+      history.replaceState({},document.title,location.pathname);
+      onReady(d.access_token);
+    });
   }
-  
-  function onReady(token) {
-    connectBtn.style.display = 'none';
-    topButtons.style.display = 'flex';
+
+  function onReady(token){
+    connectBtn.style.display='none';
+    topButtons.style.display='flex';
     loadPlaylists(token);
+    pollNowPlaying(token);
+    setInterval(()=>pollNowPlaying(token),8000);
   }
-  
-  logoutBtn.onclick = () => {
-    playUISound();
-    localStorage.removeItem('spotify_token');
-    location.reload();
+
+  /* Logout & Change Account */
+  logoutBtn.onclick=()=>{ playUISound(); localStorage.removeItem('spotify_token'); location.reload(); };
+  changeBtn.onclick=()=>{ playUISound(); localStorage.removeItem('spotify_token');
+    const authURL=`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}&show_dialog=true`;
+    window.location.href=authURL;
   };
-  
-  changeBtn.onclick = () => {
-    playUISound();
-    localStorage.removeItem('spotify_token');
-    const authURL =
-      `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
-      `&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-      `&scope=${encodeURIComponent(SCOPES)}` +
-      `&show_dialog=true`;
-    window.location.href = authURL;
-  };
-  
-  /* 🎵 Load Playlists */
-  async function loadPlaylists(t) {
-    grid.style.display = 'grid';
-    grid.innerHTML = "";
-    const r = await fetch(`https://api.spotify.com/v1/me/playlists?limit=50`, {
-      headers: { Authorization: `Bearer ${t}` },
-    });
-    if (!r.ok) return;
-    const d = await r.json();
-    d.items.forEach(p => {
-      const c = document.createElement('div');
-      c.className = 'card';
-      c.onclick = () => {
-        playUISound();
-        openPlaylist(p);
-      };
-      const img = document.createElement('img');
-      img.className = 'thumb';
-      img.src = p.images && p.images[0] ? p.images[0].url : 'https://i.imgur.com/0Z8FQpT.png';
-      const lab = document.createElement('div');
-      lab.className = 'label';
-      lab.textContent = p.name || 'Playlist';
-      c.append(img, lab);
-      grid.append(c);
+
+  /* Load playlists */
+  async function loadPlaylists(t){
+    grid.style.display='grid'; grid.innerHTML="";
+    const r=await fetch(`https://api.spotify.com/v1/me/playlists?limit=50`,{headers:{Authorization:`Bearer ${t}`}});
+    if(!r.ok) return; const d=await r.json(); d.items.forEach(p=>grid.appendChild(makeCard(p)));
+  }
+
+  function makeCard(p){
+    const c=document.createElement('div'); c.className='card';
+    c.onclick=()=>{ playUISound(); openPlaylist(p); };
+    const img=document.createElement('img'); img.className='thumb';
+    img.src=p.images && p.images[0]? p.images[0].url : 'https://i.imgur.com/0Z8FQpT.png';
+    const lab=document.createElement('div'); lab.className='label'; lab.textContent=p.name||'Playlist';
+    c.append(img,lab); return c;
+  }
+
+  async function openPlaylist(p){
+    grid.style.display='none'; playlistView.style.display='flex';
+    document.getElementById('sectionTitle').textContent=p.name;
+    const token=getT(); const r=await fetch(p.tracks.href,{headers:{Authorization:`Bearer ${token}`}});
+    if(!r.ok) return; const d=await r.json(); renderSongs(d.items);
+  }
+
+  function renderSongs(items){
+    songList.innerHTML='';
+    items.forEach(i=>{
+      const t=i.track; if(!t) return;
+      const div=document.createElement('div'); div.className='song-item';
+      const img=document.createElement('img'); img.src=t.album.images[0]?.url||''; img.className='song-cover';
+      const info=document.createElement('div'); info.className='song-info';
+      const title=document.createElement('div'); title.className='song-title'; title.textContent=t.name;
+      const artist=document.createElement('div'); artist.className='song-artist'; artist.textContent=t.artists.map(a=>a.name).join(', ');
+      info.append(title,artist); div.append(img,info);
+      div.onclick=()=>playPreview(t); songList.append(div);
     });
   }
-  
-  /* 🎶 Buka Playlist */
-  async function openPlaylist(p) {
-    grid.style.display = 'none';
-    document.getElementById('sectionTitle').textContent = p.name;
-    const token = getT();
-    const r = await fetch(p.tracks.href, { headers: { Authorization: `Bearer ${token}` } });
-    if (!r.ok) return;
-    const d = await r.json();
-    const first = d.items[0]?.track;
-    if (first) playPreview(first);
-  }
-  
-  /* ▶️ Play Lagu */
-  function playPreview(track) {
+
+  /* Play preview */
+  function playPreview(track){
     playUISound();
-    if (audioPreview) audioPreview.pause();
-    if (track.preview_url) {
-      audioPreview.src = track.preview_url;
-      audioPreview.play();
-    }
-    const cover = track.album.images[0]?.url;
-    npC.src = cover;
-    npT.textContent = track.name;
-    npA.textContent = track.artists.map(a => a.name).join(', ');
-    np.style.display = 'flex';
-    adaptAura(cover);
+    if(audioPreview) audioPreview.pause();
+    if(track.preview_url){ audioPreview.src=track.preview_url; audioPreview.play(); }
+    else { alert("Preview lagu tidak tersedia 😢"); }
+    const cover=track.album.images[0]?.url;
+    npC.src=cover; npT.textContent=track.name; npA.textContent=track.artists.map(a=>a.name).join(', ');
+    np.style.display='flex';
+    adaptAura(cover);            // -> set background sesuai cover
     dim.classList.add('on');
   }
-  
-  /* 🌀 Fullscreen Mode */
-  function enterFullscreen() {
+
+  /* Search filter */
+  searchBar.addEventListener('input',()=>{
+    const q=searchBar.value.toLowerCase();
+    document.querySelectorAll('.song-item').forEach(it=>{
+      const text=it.textContent.toLowerCase();
+      it.style.display=text.includes(q)?'flex':'none';
+    });
+  });
+
+  /* Back button */
+  backBtn.onclick=()=>{
+    playUISound();
+    playlistView.style.display='none';
+    grid.style.display='grid';
+    document.getElementById('sectionTitle').textContent='Your Playlists';
+  };
+
+  /* Now Playing polling */
+  async function pollNowPlaying(t){
+    try{
+      const r=await fetch(`https://api.spotify.com/v1/me/player/currently-playing`,{headers:{Authorization:`Bearer ${t}`}});
+      if(r.status===204){ dim.classList.remove('on'); np.style.display='none'; return; }
+      const d=await r.json(); if(!d?.item) return;
+      const c=d.item.album.images[0].url;
+      npC.src=c; npT.textContent=d.item.name; npA.textContent=d.item.artists.map(a=>a.name).join(', ');
+      np.style.display='flex';
+      adaptAura(c);
+      dim.classList.add('on');
+    }catch(e){}
+  }
+
+  /* ===== Fullscreen behaviour ===== */
+  let lastAuraBg = ''; // simpan gradient adaptif terakhir
+  function enterFullscreen(){
     frame.classList.add('fullscreen');
+    // gunakan warna adaptif terakhir; jika kosong, fallback gelap
     blurBg.style.background = lastAuraBg || 'radial-gradient(circle at 50% 50%, rgba(0,0,0,.8), #000)';
     blurBg.style.animation = 'fs-rotate 36s linear infinite';
+    blurBg.style.filter = 'blur(70px)';
     blurBg.style.opacity = '0.96';
   }
-  
-  function exitFullscreen() {
+  function exitFullscreen(){
     frame.classList.remove('fullscreen');
-    blurBg.style.animation = '';
-    blurBg.style.opacity = '1';
-  }
-  
-  /* ✅ Observasi Cover */
-  const observer = new MutationObserver(() => {
-    const cover = document.getElementById('npCover');
-    if (cover && !cover.dataset.bound) {
-      cover.dataset.bound = '1';
-      cover.style.opacity = '0';
-      cover.onload = () => {
-        cover.style.transition = 'opacity .6s ease';
-        cover.style.opacity = '1';
-      };
-      cover.addEventListener('click', () => {
-        playUISound();
-        requestAnimationFrame(() => {
-          if (frame.classList.contains('fullscreen')) exitFullscreen();
-          else enterFullscreen();
-        });
-      });
+    // restore sesuai mode aktif
+    if(frame.classList.contains('appleflow')){
+      blurBg.style.background =
+        'radial-gradient(45% 45% at 52% 48%, #002622 0%, #000 70%),' +
+        'radial-gradient(38% 38% at 62% 42%, rgba(0,232,208,.20), rgba(0,0,0,0) 70%),' +
+        'radial-gradient(32% 32% at 38% 62%, rgba(0,190,170,.16), rgba(0,0,0,0) 72%)';
+      blurBg.style.animation = 'af-rotate 32s linear infinite';
+      blurBg.style.filter='blur(70px)'; blurBg.style.opacity='0.95';
+    }else{
+      blurBg.style.animation='';
+      blurBg.style.filter='blur(80px)'; blurBg.style.opacity='1';
+      blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
     }
+  }
+
+  // Toggle on cover click
+  npC.addEventListener('click', ()=>{
+    playUISound();
+    if(frame.classList.contains('fullscreen')) exitFullscreen(); else enterFullscreen();
   });
-  observer.observe(np, { childList: true, subtree: true });
-  
-  /* 🎨 Adaptasi Warna Background dari Cover */
-  function adaptAura(u) {
-    const i = new Image();
-    i.crossOrigin = 'anonymous';
-    i.src = u;
-    i.onload = () => {
-      const c = document.createElement('canvas'),
-        x = c.getContext('2d', { willReadFrequently: true });
-      c.width = 64;
-      c.height = 64;
-      x.drawImage(i, 0, 0, 64, 64);
-      const dt = x.getImageData(0, 0, 64, 64).data;
-      let r = 0, g = 0, b = 0, cnt = 0;
-      for (let k = 0; k < dt.length; k += 4) {
-        r += dt[k];
-        g += dt[k + 1];
-        b += dt[k + 2];
-        cnt++;
-      }
-      r = Math.round(r / cnt);
-      g = Math.round(g / cnt);
-      b = Math.round(b / cnt);
-      lastAuraBg = `radial-gradient(46% 46% at 50% 50%, rgba(${r},${g},${b},0.45) 0%, rgba(0,0,0,0.92) 68%),radial-gradient(30% 30% at 70% 40%, rgba(${r},${g},${b},0.22), rgba(0,0,0,0) 70%)`;
+
+  /* Aura adapt + blur – generate gradient yang enak untuk fullscreen */
+  function adaptAura(u){
+    const i=new Image(); i.crossOrigin='anonymous'; i.src=u;
+    i.onload=()=>{
+      const c=document.createElement('canvas'), x=c.getContext('2d',{willReadFrequently:true});
+      c.width=64; c.height=64; x.drawImage(i,0,0,64,64);
+      const dt=x.getImageData(0,0,64,64).data;
+      let r=0,g=0,b=0,cnt=0;
+      for(let k=0;k<dt.length;k+=4){ r+=dt[k]; g+=dt[k+1]; b+=dt[k+2]; cnt++; }
+      r=Math.round(r/cnt); g=Math.round(g/cnt); b=Math.round(b/cnt);
+      // buat dua spot: core & highlight lembut
+      lastAuraBg =
+        `radial-gradient(46% 46% at 50% 50%, rgba(${r},${g},${b},0.45) 0%, rgba(0,0,0,0.92) 68%),`+
+        `radial-gradient(30% 30% at 70% 40%, rgba(${r},${g},${b},0.22), rgba(0,0,0,0) 70%)`;
+      // apply langsung ke blurBg (baik normal maupun fullscreen)
       blurBg.style.background = lastAuraBg;
     };
   }
-  </script>
-  </body>
-  </html>
-  
+</script>
+</body>
+</html>
