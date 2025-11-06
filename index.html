@@ -10,8 +10,8 @@
   --m-purple:#a000ff;--gravi-cyan:#00fff2;--gravi-white:#e6f4ff;
 
   /* Apple Flow palette */
-  --af-deep:#001917;       /* hijau-hitam pekat */
-  --af-core:#002622;       /* hijau tua gelap */
+  --af-deep:#001917;
+  --af-core:#002622;
   --af-cyan-soft: rgba(0,232,208,.20);
   --af-cyan-soft2: rgba(0,190,170,.16);
 }
@@ -109,86 +109,36 @@ body{
   padding:10px 18px;border-radius:12px;cursor:pointer;backdrop-filter:blur(10px);font-weight:600;transition:.3s;}
 .btn:hover{background:rgba(255,255,255,.1);}
 
-/* =========================
-   🎵 APPLE FLOW – SKYFALL (OPTIMIZED)
-   ========================= */
+/* APPLE FLOW MODE (tetap sama) */
 .frame.appleflow::before{animation:none;opacity:0;}
 .frame.appleflow::after{
-  background: radial-gradient(130% 130% at 50% 50%,
-              rgba(0,0,0,0) 45%,
-              rgba(0,0,0,.45) 78%,
-              rgba(0,0,0,.75) 100%);
+  background: radial-gradient(130% 130% at 50% 50%,rgba(0,0,0,0) 45%,rgba(0,0,0,.45) 78%,rgba(0,0,0,.75) 100%);
   filter:none;animation:none;opacity:1;
 }
-.frame.appleflow{
-  background: radial-gradient(80% 80% at 50% 50%, var(--af-deep) 0%, #000 70%);
-}
-.frame.appleflow .blur-bg{
-  inset:-12%;
-  background:
-    radial-gradient(45% 45% at 52% 48%, var(--af-core) 0%, #000 70%),
-    radial-gradient(38% 38% at 62% 42%, var(--af-cyan-soft), rgba(0,0,0,0) 70%),
-    radial-gradient(32% 32% at 38% 62%, var(--af-cyan-soft2), rgba(0,0,0,0) 72%);
-  filter: blur(70px);
-  transform: rotate(0deg) scale(1.04); will-change: transform;
-  animation: af-rotate 32s linear infinite;
-  opacity:.95;
-  transition: opacity .6s ease, transform .6s ease, background .8s ease;
-}
+.frame.appleflow{background: radial-gradient(80% 80% at 50% 50%, var(--af-deep) 0%, #000 70%);}
+.frame.appleflow .blur-bg{inset:-12%;background:radial-gradient(45% 45% at 52% 48%, var(--af-core) 0%, #000 70%),radial-gradient(38% 38% at 62% 42%, var(--af-cyan-soft), rgba(0,0,0,0) 70%),radial-gradient(32% 32% at 38% 62%, var(--af-cyan-soft2), rgba(0,0,0,0) 72%);filter: blur(70px);transform: rotate(0deg) scale(1.04);animation: af-rotate 32s linear infinite;opacity:.95;}
 @keyframes af-rotate{from{transform:rotate(0deg) scale(1.04)}to{transform:rotate(360deg) scale(1.04)}}
-.frame.appleflow .content,.frame.appleflow .buttons,.frame.appleflow .top-buttons{backdrop-filter:blur(20px);transition:backdrop-filter .6s ease;}
-body.appleflow-active{background:#000;}
-@media (prefers-reduced-motion: reduce){.frame.appleflow .blur-bg{animation:none !important;}}
 
-/* =========================
-   ✅ FULLSCREEN PLAYER (SMOOTH)
-   ========================= */
-.frame.fullscreen{
-  /* gunakan latar dari adaptAura; vignette lembut di pinggir */
-}
+/* ✅ FULLSCREEN PLAYER (APPLE MUSIC STYLE) */
 .frame.fullscreen::before{opacity:0}
 .frame.fullscreen::after{
-  background: radial-gradient(130% 130% at 50% 50%,
-              rgba(0,0,0,0) 42%,
-              rgba(0,0,0,.40) 80%,
-              rgba(0,0,0,.70) 100%);
+  background: radial-gradient(130% 130% at 50% 50%,rgba(0,0,0,0) 40%,rgba(0,0,0,.45) 78%,rgba(0,0,0,.75) 100%);
   filter:none;animation:none;opacity:1;
 }
-.frame.fullscreen .content{
-  /* sembunyikan elemen lain pelan */
-  opacity:.98; transition: opacity .35s ease;
-}
-.frame.fullscreen .grid,
-.frame.fullscreen .playlist-view,
-.frame.fullscreen .title,
-.frame.fullscreen .connect-btn{opacity:0;pointer-events:none}
-
-/* Posisikan cover ke tengah, besar, smooth */
-.frame.fullscreen .np{
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:12;
-}
-.frame.fullscreen .np-cover{
-  width:min(70vmin,520px);height:min(70vmin,520px);
-  transform:translateZ(0) scale(1.02);
-  box-shadow:0 40px 120px rgba(0,0,0,.55);
-  border-radius:24px;
-}
-.frame.fullscreen .np-title,.frame.fullscreen .np-artist{display:none}
-
-/* Layer kabut adaptif saat fullscreen */
-.frame.fullscreen .blur-bg{
-  inset:-14%;
-  filter:blur(70px);
-  will-change: transform, opacity;
-  animation: fs-rotate 36s linear infinite;
-  opacity:.95;
-  transition: opacity .6s ease, transform .6s ease, background .8s ease;
-}
+.frame.fullscreen .content{opacity:.98;transition: opacity .35s ease;}
+.frame.fullscreen .grid,.frame.fullscreen .playlist-view,.frame.fullscreen .title,.frame.fullscreen .connect-btn{opacity:0;pointer-events:none}
+.frame.fullscreen .np{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:12;}
+.frame.fullscreen .np-cover{width:min(70vmin,520px);height:min(70vmin,520px);transform:translateZ(0) scale(1.02);box-shadow:0 40px 120px rgba(0,0,0,.55);border-radius:24px;}
+.frame.fullscreen .np-title,.frame.fullscreen .np-artist{display:block;text-align:center;margin-top:18px;}
+.frame.fullscreen .np-title{font-size:1.8rem;font-weight:800;opacity:.96;}
+.frame.fullscreen .np-artist{font-size:1rem;opacity:.75;margin-top:4px;}
+.frame.fullscreen .blur-bg{inset:-14%;filter:blur(70px);will-change:transform,opacity;animation:fs-rotate 36s linear infinite;opacity:.96;transition:opacity .6s ease,transform .6s ease,background .8s ease;}
 @keyframes fs-rotate{from{transform:rotate(0deg) scale(1.05)}to{transform:rotate(360deg) scale(1.05)}}
 </style>
 </head>
 <body>
 
+  
 <div class="intro" id="intro">
   <h1>Welcome to GRAVI Inteligence Music Experience</h1>
   <button class="start-btn" id="startBtn">Start Experience</button>
