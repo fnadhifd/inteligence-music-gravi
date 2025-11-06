@@ -234,18 +234,26 @@ body.appleflow-active{background:#000;}
   fetch('audio/intro.mp3').then(r=>r.arrayBuffer()).then(b=>audioCtx.decodeAudioData(b)).then(d=>(uiBuffer=d));
   function playUISound(v=0.3){ if(!uiBuffer) return; const s=audioCtx.createBufferSource(); const g=audioCtx.createGain(); g.gain.value=v; s.buffer=uiBuffer; s.connect(g).connect(audioCtx.destination); s.start(0); }
 
-  /* Intro */
+  /* Core Elements */
   const intro = document.getElementById('intro'),
         frame = document.getElementById('frame'),
-        bottomBtns = document.getElementById('bottomBtns');
-  const blurBg = document.getElementById('blurBg');
+        bottomBtns = document.getElementById('bottomBtns'),
+        blurBg = document.getElementById('blurBg'),
+        np = document.getElementById('nowPlaying'),
+        npC = document.getElementById('npCover'),
+        npT = document.getElementById('npTitle'),
+        npA = document.getElementById('npArtist'),
+        dim = document.getElementById('dim');
+  let lastAuraBg = '';
+
+  /* Start Intro */
   document.getElementById('startBtn').onclick=()=>{
     audioCtx.resume(); playUISound();
     intro.style.opacity='0';
     setTimeout(()=>{ intro.style.display='none'; frame.style.opacity='1'; bottomBtns.style.display='flex'; },2000);
   };
 
-  /* Apple Flow – toggle super ringan (restore gradient) */
+  /* Apple Flow & RGB */
   document.getElementById('appleBtn').onclick=()=>{
     playUISound();
     frame.classList.remove('rgb');
@@ -253,40 +261,31 @@ body.appleflow-active{background:#000;}
     document.body.classList.toggle('appleflow-active');
 
     if(frame.classList.contains('appleflow')){
-      // set ulang gradient Apple Flow
       blurBg.style.background =
         'radial-gradient(45% 45% at 52% 48%, #002622 0%, #000 70%),' +
         'radial-gradient(38% 38% at 62% 42%, rgba(0,232,208,.20), rgba(0,0,0,0) 70%),' +
         'radial-gradient(32% 32% at 38% 62%, rgba(0,190,170,.16), rgba(0,0,0,0) 72%)';
-      blurBg.style.filter='blur(70px)';
       blurBg.style.animation='af-rotate 32s linear infinite';
-      blurBg.style.opacity='0.95';
-    }else{
-      // back to default
-      blurBg.style.animation='';
-      blurBg.style.opacity='1';
-      blurBg.style.filter='blur(80px)';
+    } else {
       blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
+      blurBg.style.animation='';
     }
   };
 
-  /* RGB Mode */
   document.getElementById('rgbBtn').onclick=()=>{
     playUISound();
     frame.classList.add('rgb');
     frame.classList.remove('appleflow','fullscreen');
     document.body.classList.remove('appleflow-active');
-    blurBg.style.animation=''; blurBg.style.opacity='1';
-    blurBg.style.filter='blur(80px)';
+    blurBg.style.animation='';
     blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
   };
 
-  /* Spotify Auth */
+  /* Spotify Auth Setup */
   const CLIENT_ID="a4c46dd220374fc586a40f8450993f5a";
   const REDIRECT_URI="https://inteligence-music-gravi.vercel.app/";
   const SCOPES="user-read-currently-playing user-read-playback-state playlist-read-private user-library-read";
   const saveT=t=>localStorage.setItem('spotify_token',t), getT=()=>localStorage.getItem('spotify_token');
-
   const connectBtn=document.getElementById('connectSpotify');
   const logoutBtn=document.getElementById('logoutBtn');
   const changeBtn=document.getElementById('changeAccount');
@@ -296,11 +295,6 @@ body.appleflow-active{background:#000;}
   const backBtn=document.getElementById('backBtn');
   const searchBar=document.getElementById('searchBar');
   const songList=document.getElementById('songList');
-  const np=document.getElementById('nowPlaying');
-  const npC=document.getElementById('npCover'),
-        npT=document.getElementById('npTitle'),
-        npA=document.getElementById('npArtist');
-  const dim=document.getElementById('dim');
   let audioPreview=new Audio();
   const url=new URLSearchParams(location.search), code=url.get('code');
 
@@ -329,14 +323,12 @@ body.appleflow-active{background:#000;}
     setInterval(()=>pollNowPlaying(token),8000);
   }
 
-  /* Logout & Change Account */
   logoutBtn.onclick=()=>{ playUISound(); localStorage.removeItem('spotify_token'); location.reload(); };
   changeBtn.onclick=()=>{ playUISound(); localStorage.removeItem('spotify_token');
     const authURL=`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}&show_dialog=true`;
     window.location.href=authURL;
   };
 
-  /* Load playlists */
   async function loadPlaylists(t){
     grid.style.display='grid'; grid.innerHTML="";
     const r=await fetch(`https://api.spotify.com/v1/me/playlists?limit=50`,{headers:{Authorization:`Bearer ${t}`}});
@@ -373,7 +365,6 @@ body.appleflow-active{background:#000;}
     });
   }
 
-  /* Play preview */
   function playPreview(track){
     playUISound();
     if(audioPreview) audioPreview.pause();
@@ -382,75 +373,11 @@ body.appleflow-active{background:#000;}
     const cover=track.album.images[0]?.url;
     npC.src=cover; npT.textContent=track.name; npA.textContent=track.artists.map(a=>a.name).join(', ');
     np.style.display='flex';
-    adaptAura(cover);            // -> set background sesuai cover
+    adaptAura(cover);
     dim.classList.add('on');
   }
 
-  /* Search filter */
-  searchBar.addEventListener('input',()=>{
-    const q=searchBar.value.toLowerCase();
-    document.querySelectorAll('.song-item').forEach(it=>{
-      const text=it.textContent.toLowerCase();
-      it.style.display=text.includes(q)?'flex':'none';
-    });
-  });
-
-  /* Back button */
-  backBtn.onclick=()=>{
-    playUISound();
-    playlistView.style.display='none';
-    grid.style.display='grid';
-    document.getElementById('sectionTitle').textContent='Your Playlists';
-  };
-
-  /* Now Playing polling */
-  async function pollNowPlaying(t){
-    try{
-      const r=await fetch(`https://api.spotify.com/v1/me/player/currently-playing`,{headers:{Authorization:`Bearer ${t}`}});
-      if(r.status===204){ dim.classList.remove('on'); np.style.display='none'; return; }
-      const d=await r.json(); if(!d?.item) return;
-      const c=d.item.album.images[0].url;
-      npC.src=c; npT.textContent=d.item.name; npA.textContent=d.item.artists.map(a=>a.name).join(', ');
-      np.style.display='flex';
-      adaptAura(c);
-      dim.classList.add('on');
-    }catch(e){}
-  }
-
-  /* ===== Fullscreen behaviour ===== */
-  let lastAuraBg = ''; // simpan gradient adaptif terakhir
-  function enterFullscreen(){
-    frame.classList.add('fullscreen');
-    // gunakan warna adaptif terakhir; jika kosong, fallback gelap
-    blurBg.style.background = lastAuraBg || 'radial-gradient(circle at 50% 50%, rgba(0,0,0,.8), #000)';
-    blurBg.style.animation = 'fs-rotate 36s linear infinite';
-    blurBg.style.filter = 'blur(70px)';
-    blurBg.style.opacity = '0.96';
-  }
-  function exitFullscreen(){
-    frame.classList.remove('fullscreen');
-    // restore sesuai mode aktif
-    if(frame.classList.contains('appleflow')){
-      blurBg.style.background =
-        'radial-gradient(45% 45% at 52% 48%, #002622 0%, #000 70%),' +
-        'radial-gradient(38% 38% at 62% 42%, rgba(0,232,208,.20), rgba(0,0,0,0) 70%),' +
-        'radial-gradient(32% 32% at 38% 62%, rgba(0,190,170,.16), rgba(0,0,0,0) 72%)';
-      blurBg.style.animation = 'af-rotate 32s linear infinite';
-      blurBg.style.filter='blur(70px)'; blurBg.style.opacity='0.95';
-    }else{
-      blurBg.style.animation='';
-      blurBg.style.filter='blur(80px)'; blurBg.style.opacity='1';
-      blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
-    }
-  }
-
-  // Toggle on cover click
-  npC.addEventListener('click', ()=>{
-    playUISound();
-    if(frame.classList.contains('fullscreen')) exitFullscreen(); else enterFullscreen();
-  });
-
-  /* Aura adapt + blur – generate gradient yang enak untuk fullscreen */
+  /* Background aura adaptif */
   function adaptAura(u){
     const i=new Image(); i.crossOrigin='anonymous'; i.src=u;
     i.onload=()=>{
@@ -460,14 +387,46 @@ body.appleflow-active{background:#000;}
       let r=0,g=0,b=0,cnt=0;
       for(let k=0;k<dt.length;k+=4){ r+=dt[k]; g+=dt[k+1]; b+=dt[k+2]; cnt++; }
       r=Math.round(r/cnt); g=Math.round(g/cnt); b=Math.round(b/cnt);
-      // buat dua spot: core & highlight lembut
-      lastAuraBg =
-        `radial-gradient(46% 46% at 50% 50%, rgba(${r},${g},${b},0.45) 0%, rgba(0,0,0,0.92) 68%),`+
-        `radial-gradient(30% 30% at 70% 40%, rgba(${r},${g},${b},0.22), rgba(0,0,0,0) 70%)`;
-      // apply langsung ke blurBg (baik normal maupun fullscreen)
+      lastAuraBg = `radial-gradient(46% 46% at 50% 50%, rgba(${r},${g},${b},0.45) 0%, rgba(0,0,0,0.92) 68%),radial-gradient(30% 30% at 70% 40%, rgba(${r},${g},${b},0.22), rgba(0,0,0,0) 70%)`;
       blurBg.style.background = lastAuraBg;
     };
   }
+
+  /* Fullscreen control */
+  function enterFullscreen(){
+    frame.classList.add('fullscreen');
+    blurBg.style.background = lastAuraBg || 'radial-gradient(circle at 50% 50%, rgba(0,0,0,.8), #000)';
+    blurBg.style.animation = 'fs-rotate 36s linear infinite';
+    blurBg.style.filter = 'blur(70px)';
+    blurBg.style.opacity = '0.96';
+  }
+  function exitFullscreen(){
+    frame.classList.remove('fullscreen');
+    if(frame.classList.contains('appleflow')){
+      blurBg.style.background =
+        'radial-gradient(45% 45% at 52% 48%, #002622 0%, #000 70%),' +
+        'radial-gradient(38% 38% at 62% 42%, rgba(0,232,208,.20), rgba(0,0,0,0) 70%),' +
+        'radial-gradient(32% 32% at 38% 62%, rgba(0,190,170,.16), rgba(0,0,0,0) 72%)';
+      blurBg.style.animation = 'af-rotate 32s linear infinite';
+    } else {
+      blurBg.style.animation='';
+      blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
+    }
+  }
+
+  // 💡 Ini fix-nya: observer biar npCover selalu aktif walau muncul belakangan
+  const coverObserver = new MutationObserver(()=>{
+    const coverEl = document.getElementById('npCover');
+    if(coverEl && !coverEl.dataset.bound){
+      coverEl.dataset.bound = '1';
+      coverEl.addEventListener('click',()=>{
+        playUISound();
+        requestAnimationFrame(()=>{
+          if(frame.classList.contains('fullscreen')) exitFullscreen(); 
+          else enterFullscreen();
+        });
+      });
+    }
+  });
+  coverObserver.observe(document.body,{childList:true,subtree:true});
 </script>
-</body>
-</html>
