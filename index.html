@@ -131,26 +131,37 @@ body.scroll-locked {
   height: 100vh;
   justify-content: center;
   align-items: center;
-  z-index: 50; /* Z-index ini penting! */
-  background: rgba(0, 0, 0, 0.95); /* Latar belakang gelap */
+  z-index: 50; 
+  background: rgba(0, 0, 0, 0.95); 
   margin-top: 0;
   padding-top: 0; 
-  /* Pastikan konten di dalamnya juga terpusat */
+  padding-bottom: 50px; /* Tambahkan padding bawah untuk judul */
   display: flex;
   flex-direction: column;
 }
 
 .np.fullscreen .np-cover {
-  width: min(90vw, 90vh); /* Ukuran besar di tengah layar */
-  height: min(90vw, 90vh);
-  border-radius: 12px;
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+  /* Ukuran medium yang baru (sekitar 70% dari viewport height, max 500px) */
+  width: min(70vw, 500px); 
+  height: min(70vw, 500px);
+  border-radius: 20px; /* Sedikit lebih membulat */
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+  margin-bottom: 20px; /* Jarak antara cover dan info lagu */
 }
 
-/* Sembunyikan Judul dan Artis saat Fullscreen */
-.np.fullscreen .np-title, 
+/* TAMPILKAN Judul dan Artis saat Fullscreen, beri style besar */
+.np.fullscreen .np-title {
+  display: block; 
+  font-size: 2.5rem; /* Ukuran besar untuk judul */
+  font-weight: 800;
+  margin-top: 10px;
+  line-height: 1.1;
+}
 .np.fullscreen .np-artist {
-  display: none; 
+  display: block;
+  font-size: 1.5rem; /* Ukuran sedang untuk artis */
+  opacity: 0.9;
+  margin-top: 5px;
 }
 
 /* Bottom buttons */
@@ -207,11 +218,17 @@ body.appleflow-active{background:#000;}
   .frame .np-artist{font-size: 1rem;}
 
   .np.fullscreen .np-cover {
-    /* Sedikit lebih besar untuk ponsel */
-    width: 95vw;
-    height: 95vw;
-    max-height: 95vh;
-    max-width: 95vh;
+    /* Ukuran medium untuk ponsel */
+    width: 80vw;
+    height: 80vw;
+    max-height: 80vh;
+    max-width: 80vh;
+  }
+  .np.fullscreen .np-title {
+    font-size: 2rem; /* Judul lebih kecil di ponsel */
+  }
+  .np.fullscreen .np-artist {
+    font-size: 1.2rem; /* Artis lebih kecil di ponsel */
   }
 }
 </style>
@@ -449,11 +466,7 @@ body.appleflow-active{background:#000;}
     np.classList.toggle('fullscreen', state);
     document.body.classList.toggle('scroll-locked', state);
     
-    // Hapus hiding content. Konten NP sudah fixed dan z-index tinggi.
-    // const content = document.getElementById('content');
-    const bottomBtns = document.getElementById('bottomBtns');
-    const topButtons = document.getElementById('topButtons');
-
+    // Tentukan visibilitas tombol
     const visibility = state ? 'hidden' : 'visible';
     const opacity = state ? '0' : '1';
     
