@@ -131,8 +131,8 @@ body.scroll-locked {
   height: 100vh;
   justify-content: center;
   align-items: center;
-  z-index: 50; 
-  background: rgba(0, 0, 0, 0.95); 
+  z-index: 50; /* Z-index ini penting! */
+  background: rgba(0, 0, 0, 0.95); /* Latar belakang gelap */
   margin-top: 0;
   padding-top: 0; 
   /* Pastikan konten di dalamnya juga terpusat */
@@ -265,7 +265,7 @@ body.appleflow-active{background:#000;}
   let uiBuffer;
   // Ganti path ke intro.mp3
   const introAudioPath = 'https://cdn.jsdelivr.net/gh/google/flat-icons/svg/volume-up.svg'; // Placeholder untuk linting
-  fetch(introAudioPath).then(r=>r.arrayBuffer()).then(b=>audioCtx.decodeAudioData(b)).then(d=>(uiBuffer=d)).catch(e=>console.log("Intro sound failed to load:", e));
+  fetch(introAudioPath).then(r=>r.arrayBuffer()).then(b=>audioCtx.decodeSourceData(b)).then(d=>(uiBuffer=d)).catch(e=>console.log("Intro sound failed to load:", e));
   function playUISound(v=0.3){ if(!uiBuffer) return; const s=audioCtx.createBufferSource(); const g=audioCtx.createGain(); g.gain.value=v; s.buffer=uiBuffer; s.connect(g).connect(audioCtx.destination); s.start(0); }
 
   /* Intro */
@@ -449,22 +449,20 @@ body.appleflow-active{background:#000;}
     np.classList.toggle('fullscreen', state);
     document.body.classList.toggle('scroll-locked', state);
     
-    const content = document.getElementById('content');
+    // Hapus hiding content. Konten NP sudah fixed dan z-index tinggi.
+    // const content = document.getElementById('content');
     const bottomBtns = document.getElementById('bottomBtns');
     const topButtons = document.getElementById('topButtons');
 
     const visibility = state ? 'hidden' : 'visible';
     const opacity = state ? '0' : '1';
     
-    // Gunakan visibility dan opacity untuk transisi yang halus
-    content.style.visibility = visibility;
-    content.style.opacity = opacity;
+    // Sembunyikan/Tampilkan Top & Bottom Controls
+    topButtons.style.visibility = visibility;
+    topButtons.style.opacity = opacity;
     
     bottomBtns.style.visibility = visibility;
     bottomBtns.style.opacity = opacity;
-    
-    topButtons.style.visibility = visibility;
-    topButtons.style.opacity = opacity;
     
     // Khusus untuk Now Playing, ubah display agar tetap muncul
     if (!state) {
@@ -473,10 +471,7 @@ body.appleflow-active{background:#000;}
         bottomBtns.style.display = 'flex';
         topButtons.style.display = 'flex';
       }
-    } else {
-      // Saat masuk fullscreen, pastikan hanya np yang terlihat.
-      // Top dan bottom buttons disembunyikan via opacity/visibility.
-    }
+    } 
   }
   
   // Single Click Handler untuk Cover (Toggle Fullscreen + Play/Pause)
