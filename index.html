@@ -184,6 +184,31 @@ body.appleflow-active{background:#000;}
   opacity:.95;
   transition: opacity .6s ease, transform .6s ease, background .8s ease;
 }
+
+/* ===== SHOW TITLE & ARTIST IN FULLSCREEN ===== */
+.frame.fullscreen .np-title,
+.frame.fullscreen .np-artist{
+  display:block !important;
+  position:absolute;
+  width:100%;
+  text-align:center;
+  left:0;
+  color:#fff;
+  text-shadow:0 2px 8px rgba(0,0,0,.6);
+}
+.frame.fullscreen .np-title{
+  bottom:calc(50% - min(45vmin,340px));
+  font-size:1.4rem;
+  font-weight:800;
+  letter-spacing:.5px;
+}
+.frame.fullscreen .np-artist{
+  bottom:calc(50% - min(45vmin,310px));
+  font-size:1rem;
+  opacity:.8;
+  font-weight:500;
+}
+
 @keyframes fs-rotate{from{transform:rotate(0deg) scale(1.05)}to{transform:rotate(360deg) scale(1.05)}}
 </style>
 </head>
@@ -418,6 +443,17 @@ body.appleflow-active{background:#000;}
   }
 
   /* ===== Fullscreen behaviour ===== */
+
+  // Lock scroll saat fullscreen (mobile friendly)
+function lockScroll(){
+  document.body.style.overflow='hidden';
+  document.documentElement.style.overflow='hidden';
+}
+function unlockScroll(){
+  document.body.style.overflow='';
+  document.documentElement.style.overflow='';
+}
+
   let lastAuraBg = ''; // simpan gradient adaptif terakhir
   function enterFullscreen(){
     frame.classList.add('fullscreen');
