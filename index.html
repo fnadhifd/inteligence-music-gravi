@@ -249,6 +249,16 @@ body.fullscreen-lock, html.fullscreen-lock { overflow: hidden !important; }
   transition: opacity .5s ease;
 }
 
+html, body {
+  height: 100%;
+}
+
+/* iOS Safari viewport fix */
+@supports (-webkit-touch-callout: none) {
+  .frame.fullscreen {
+    height: -webkit-fill-available;
+  }
+}
 
 
 @keyframes fs-rotate{from{transform:rotate(0deg) scale(1.05)}to{transform:rotate(360deg) scale(1.05)}}
