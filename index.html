@@ -185,43 +185,70 @@ body.appleflow-active{background:#000;}
   transition: opacity .6s ease, transform .6s ease, background .8s ease;
 }
 
-/* ===== Fullscreen title & artist – responsive fix ===== */
-.frame.fullscreen .np-title,
-.frame.fullscreen .np-artist{
-  display:block !important;
-  position:relative;
-  text-align:center;
-  color:#fff;
-  text-shadow:0 2px 10px rgba(0,0,0,.7);
-  margin-top:20px;
-  animation:fadeInTextFS .8s ease forwards;
-}
-.frame.fullscreen .np-title{
-  font-size:clamp(1.2rem, 4vw, 1.6rem);
-  font-weight:800;
-  letter-spacing:.5px;
-}
-.frame.fullscreen .np-artist{
-  font-size:clamp(0.9rem, 3vw, 1.1rem);
-  opacity:.85;
-  font-weight:500;
-  margin-top:4px;
-}
-@keyframes fadeInTextFS{
-  from{opacity:0;transform:translateY(10px);}
-  to{opacity:1;transform:translateY(0);}
+/* ===== Fullscreen layout refined (for mobile & desktop) ===== */
+.frame.fullscreen .np {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  z-index: 12;
+  padding: 0 20px;
+  text-align: center;
 }
 
-/* fix posisi judul agar tetap di bawah cover */
-.frame.fullscreen .np{
-  flex-direction:column;
-  justify-content:center;
+.frame.fullscreen .np-cover {
+  width: min(72vmin, 340px);
+  height: min(72vmin, 340px);
+  border-radius: 24px;
+  object-fit: cover;
+  box-shadow: 0 40px 120px rgba(0,0,0,.6);
+  transform: scale(1.02);
+  transition: transform .6s cubic-bezier(.2,.8,.2,1);
 }
 
-/* kunci scroll juga pada .content */
-.frame.fullscreen .content{
-  overflow:hidden !important;
+/* judul & artis responsif dan elegan */
+.frame.fullscreen .np-title {
+  display: block !important;
+  font-size: clamp(1.3rem, 4.5vw, 1.6rem);
+  font-weight: 800;
+  margin-top: 14px;
+  text-align: center;
+  color: #fff;
+  letter-spacing: .4px;
+  text-shadow: 0 2px 10px rgba(0,0,0,.7);
+  animation: fadeInTextFS .8s ease forwards;
 }
+
+.frame.fullscreen .np-artist {
+  display: block !important;
+  font-size: clamp(1rem, 3.5vw, 1.2rem);
+  font-weight: 500;
+  opacity: .85;
+  color: #fff;
+  margin-top: 2px;
+  text-shadow: 0 1px 8px rgba(0,0,0,.6);
+  animation: fadeInTextFS .8s ease forwards;
+}
+
+@keyframes fadeInTextFS {
+  from {opacity:0; transform:translateY(8px);}
+  to {opacity:1; transform:translateY(0);}
+}
+
+/* pastikan content & body tidak bisa scroll */
+.frame.fullscreen .content { overflow: hidden !important; }
+body.fullscreen-lock, html.fullscreen-lock { overflow: hidden !important; }
+
+/* sembunyikan tombol bawah agar lebih cinematic */
+.frame.fullscreen ~ .buttons {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .5s ease;
+}
+
 
 
 @keyframes fs-rotate{from{transform:rotate(0deg) scale(1.05)}to{transform:rotate(360deg) scale(1.05)}}
@@ -460,12 +487,12 @@ body.appleflow-active{background:#000;}
   /* ===== Fullscreen behaviour ===== */
 
   function lockScroll(){
-  document.body.style.overflow='hidden';
-  document.documentElement.style.overflow='hidden';
+  document.body.classList.add('fullscreen-lock');
+  document.documentElement.classList.add('fullscreen-lock');
 }
 function unlockScroll(){
-  document.body.style.overflow='';
-  document.documentElement.style.overflow='';
+  document.body.classList.remove('fullscreen-lock');
+  document.documentElement.classList.remove('fullscreen-lock');
 }
 
 function enterFullscreen(){
