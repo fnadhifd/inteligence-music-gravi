@@ -523,67 +523,77 @@ body.fullscreen-lock, html.fullscreen-lock { overflow: hidden !important; }
   }
 
   let lastAuraBg = '';
-  const scrollToggle = document.getElementById('scrollToggle');
-  let scrollLocked = true; // default: terkunci saat masuk fullscreen
+const scrollToggle = document.getElementById('scrollToggle');
+let scrollLocked = true; // default: terkunci saat fullscreen
+scrollToggle.style.display = 'none'; // sembunyikan awal
 
-  function enterFullscreen(){
-    frame.classList.add('fullscreen');
-    blurBg.style.background = lastAuraBg || 'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.8), #000)';
-    blurBg.style.animation = 'fs-rotate 36s linear infinite';
-    blurBg.style.filter = 'blur(70px)';
-    blurBg.style.opacity = '0.96';
-    // lock by default
+function enterFullscreen(){
+  frame.classList.add('fullscreen');
+  blurBg.style.background = lastAuraBg || 'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.8), #000)';
+  blurBg.style.animation = 'fs-rotate 36s linear infinite';
+  blurBg.style.filter = 'blur(70px)';
+  blurBg.style.opacity = '0.96';
+
+  // Lock scroll by default
+  lockScroll();
+  document.getElementById('content').style.overflow = 'hidden';
+  scrollLocked = true;
+  scrollToggle.textContent = '🔓 Unlock Scroll';
+
+  // Munculkan tombol hanya setelah fullscreen aktif
+  setTimeout(() => {
+    scrollToggle.style.display = 'block';
+    scrollToggle.style.opacity = '1';
+  }, 400);
+}
+
+function exitFullscreen(){
+  frame.classList.remove('fullscreen');
+  if(frame.classList.contains('appleflow')){
+    blurBg.style.background =
+      'radial-gradient(45% 45% at 52% 48%, #002622 0%, #000 70%),' +
+      'radial-gradient(38% 38% at 62% 42%, rgba(0,232,208,.20), rgba(0,0,0,0) 70%),' +
+      'radial-gradient(32% 32% at 38% 62%, rgba(0,190,170,.16), rgba(0,0,0,0) 72%)';
+    blurBg.style.animation = 'af-rotate 32s linear infinite';
+    blurBg.style.filter='blur(70px)';
+    blurBg.style.opacity='0.95';
+  } else {
+    blurBg.style.animation='';
+    blurBg.style.filter='blur(80px)';
+    blurBg.style.opacity='1';
+    blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
+  }
+
+  unlockScroll();
+  document.getElementById('content').style.overflow = 'auto';
+
+  // Sembunyikan tombol saat keluar fullscreen
+  scrollToggle.style.opacity = '0';
+  setTimeout(() => { scrollToggle.style.display = 'none'; }, 300);
+}
+
+// Klik cover untuk toggle fullscreen
+npC.addEventListener('click', ()=>{
+  playUISound();
+  if(frame.classList.contains('fullscreen')) exitFullscreen(); 
+  else enterFullscreen();
+});
+
+// Klik tombol untuk toggle scroll lock/unlock
+scrollToggle.onclick = () => {
+  playUISound();
+  scrollLocked = !scrollLocked;
+  if (scrollLocked) {
     lockScroll();
     document.getElementById('content').style.overflow='hidden';
-    scrollLocked = true;
     scrollToggle.textContent = '🔓 Unlock Scroll';
-  }
-
-  function exitFullscreen(){
-    frame.classList.remove('fullscreen');
-    if(frame.classList.contains('appleflow')){
-      blurBg.style.background =
-        'radial-gradient(45% 45% at 52% 48%, #002622 0%, #000 70%),' +
-        'radial-gradient(38% 38% at 62% 42%, rgba(0,232,208,.20), rgba(0,0,0,0) 70%),' +
-        'radial-gradient(32% 32% at 38% 62%, rgba(0,190,170,.16), rgba(0,0,0,0) 72%)';
-      blurBg.style.animation = 'af-rotate 32s linear infinite';
-      blurBg.style.filter='blur(70px)';
-      blurBg.style.opacity='0.95';
-    }else{
-      blurBg.style.animation='';
-      blurBg.style.filter='blur(80px)';
-      blurBg.style.opacity='1';
-      blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
-    }
+  } else {
     unlockScroll();
     document.getElementById('content').style.overflow='auto';
-    // reset label (akan disembunyikan oleh CSS ketika non-fullscreen)
-    scrollToggle.textContent = '🔓 Unlock Scroll';
+    scrollToggle.textContent = '🔒 Lock Scroll';
   }
+};
 
-  // Toggle on cover click
-  const npC = document.getElementById('npCover'),
-        npT = document.getElementById('npTitle'),
-        npA = document.getElementById('npArtist');
-  npC.addEventListener('click', ()=>{
-    playUISound();
-    if(frame.classList.contains('fullscreen')) exitFullscreen(); else enterFullscreen();
-  });
-
-  // Manual toggle lock/unlock scroll
-  scrollToggle.onclick = () => {
-    playUISound();
-    scrollLocked = !scrollLocked;
-    if (scrollLocked) {
-      lockScroll();
-      document.getElementById('content').style.overflow='hidden';
-      scrollToggle.textContent = '🔓 Unlock Scroll';
-    } else {
-      unlockScroll();
-      document.getElementById('content').style.overflow='auto';
-      scrollToggle.textContent = '🔒 Lock Scroll';
-    }
-  };
 
   /* Aura adapt + blur – generate gradient yang enak untuk fullscreen */
   function adaptAura(u){
