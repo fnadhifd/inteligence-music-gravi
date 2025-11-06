@@ -250,26 +250,34 @@ body.appleflow-active{
     }, 2000);
   };
   
-  /* Apple Flow – toggle super ringan */
-  document.getElementById('appleBtn').onclick = () => {
-    playUISound();
-    frame.classList.remove('rgb');                 // keluar dari RGB mode kalau ada
-    frame.classList.toggle('appleflow');
-    document.body.classList.toggle('appleflow-active');
+  /* Apple Flow – toggle super ringan (fixed gradient restore) */
+document.getElementById('appleBtn').onclick = () => {
+  playUISound();
+  frame.classList.remove('rgb');
+  frame.classList.toggle('appleflow');
+  document.body.classList.toggle('appleflow-active');
 
-    const blurBg = document.getElementById('blurBg');
-    if (frame.classList.contains('appleflow')) {
-      // aktif: pastikan animasi transform-only
-      blurBg.style.animation = 'af-rotate 32s linear infinite';
-      blurBg.style.opacity = '0.95';
-      // tidak perlu sentuh filter (tetap 70px), supaya ringan
-    } else {
-      // kembali ke default
-      blurBg.style.animation = '';
-      blurBg.style.opacity = '1';
-      blurBg.style.background = 'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
-    }
-  };
+  const blurBg = document.getElementById('blurBg');
+
+  if (frame.classList.contains('appleflow')) {
+    // aktif: set ulang gradient hijau cyan Apple Flow
+    blurBg.style.background =
+      'radial-gradient(45% 45% at 52% 48%, #002622 0%, #000 70%),' +
+      'radial-gradient(38% 38% at 62% 42%, rgba(0,232,208,.20), rgba(0,0,0,0) 70%),' +
+      'radial-gradient(32% 32% at 38% 62%, rgba(0,190,170,.16), rgba(0,0,0,0) 72%)';
+    blurBg.style.animation = 'af-rotate 32s linear infinite';
+    blurBg.style.opacity = '0.95';
+    blurBg.style.filter = 'blur(70px)';
+  } else {
+    // kembali ke default
+    blurBg.style.animation = '';
+    blurBg.style.opacity = '1';
+    blurBg.style.filter = 'blur(80px)';
+    blurBg.style.background =
+      'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
+  }
+};
+
   
   /* RGB Mode (tetap seperti semula) */
   document.getElementById('rgbBtn').onclick = () => {
