@@ -176,13 +176,16 @@ body.appleflow-active{background:#000;}
 .frame.fullscreen .np-title,.frame.fullscreen .np-artist{display:none}
 
 /* Layer kabut adaptif saat fullscreen */
-.frame.fullscreen .blur-bg{
-  inset:-14%;
-  filter:blur(70px);
-  will-change: transform, opacity;
-  animation: fs-rotate 36s linear infinite;
-  opacity:.95;
-  transition: opacity .6s ease, transform .6s ease, background .8s ease;
+.frame {
+  position: relative;
+  z-index: 1;
+  width: 100vw;
+  height: 100vh;
+  border-radius: 38px;
+  background: #000;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 2s ease;
 }
 
 /* ===== Fullscreen layout refined (for mobile & desktop) ===== */
@@ -266,10 +269,11 @@ body.fullscreen-lock, html.fullscreen-lock { overflow: hidden !important; }
 #gravi-react-bg {
   position: fixed;
   inset: 0;
-  z-index: 0;              /* tampil di belakang .frame */
+  z-index: -1; /* <– penting: di belakang frame tapi masih kelihatan */
   pointer-events: none;
   opacity: 0;
   transition: opacity 1.2s ease-in-out;
+  filter: blur(100px) saturate(180%) brightness(85%);
 }
 
 /* aktif hanya saat fullscreen */
