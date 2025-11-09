@@ -286,6 +286,13 @@ body.fullscreen-lock, html.fullscreen-lock { overflow: hidden !important; }
 
 @keyframes fs-rotate{from{transform:rotate(0deg) scale(1.05)}to{transform:rotate(360deg) scale(1.05)}}
 </style>
+
+<!-- React + Babel + ColorThief -->
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+
 </head>
 <body>
 
@@ -329,6 +336,67 @@ body.fullscreen-lock, html.fullscreen-lock { overflow: hidden !important; }
   <button id="appleBtn" class="btn">Apple Flow</button>
   <button id="rgbBtn" class="btn">RGB Live</button>
 </div>
+<!-- React Apple Music-style Background -->
+<div id="gravi-react-bg"></div>
+<script type="text/babel">
+
+const { useEffect, useRef, useState } = React;
+
+function GraviMusicBackground({ imageUrl }) {
+  const bgRef = useRef(null);
+  const imgRef = useRef(null);
+  const [gradient, setGradient] = useState(
+    'radial-gradient(circle at top left, rgba(0,0,0,0.8), #000)'
+  );
+
+  useEffect(() => {
+    const img = imgRef.current;
+    const colorThief = new ColorThief();
+
+    const applyColor = () => {
+      try {
+        const color = colorThief.getColor(img);
+        const palette = colorThief.getPalette(img, 3);
+        const [r, g, b] = color;
+        const [r2, g2, b2] = palette[1] || [r - 40, g - 40, b - 40];
+        const [r3, g3, b3] = palette[2] || [r - 70, g - 70, b - 70];
+        const newGrad = `
+          radial-gradient(circle at 30% 30%, rgba(${r},${g},${b},0.9),
+          rgba(${r2},${g2},${b2},0.7),
+          rgba(${r3},${g3},${b3},1))
+        `;
+        setGradient(newGrad);
+      } catch(e) {}
+    };
+
+    if (img.complete) applyColor();
+    else img.addEventListener('load', applyColor);
+
+    return () => img.removeEventListener('load', applyColor);
+  }, [imageUrl]);
+
+  return (
+    <div
+      ref={bgRef}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: -1,
+        background: gradient,
+        filter: 'blur(90px) saturate(200%) brightness(80%)',
+        transition: 'background 2.5s ease-in-out',
+      }}
+    >
+      <img ref={imgRef} src={imageUrl} crossOrigin='anonymous' style={{ display: 'none' }} />
+    </div>
+  );
+}
+
+// Global function for GRAVI system to update React background
+window.updateGraviBackground = (imageUrl) => {
+  ReactDOM.render(<GraviMusicBackground imageUrl={imageUrl} />, document.getElementById('gravi-react-bg'));
+};
+</script>
 
 <script>
   /* Intro Sound */
@@ -617,22 +685,23 @@ scrollToggle.onclick = () => {
 
   /* Aura adapt + blur – generate gradient yang enak untuk fullscreen */
   function adaptAura(u){
-    const i=new Image(); i.crossOrigin='anonymous'; i.src=u;
-    i.onload=()=>{
-      const c=document.createElement('canvas'), x=c.getContext('2d',{willReadFrequently:true});
-      c.width=64; c.height=64; x.drawImage(i,0,0,64,64);
-      const dt=x.getImageData(0,0,64,64).data;
-      let r=0,g=0,b=0,cnt=0;
-      for(let k=0;k<dt.length;k+=4){ r+=dt[k]; g+=dt[k+1]; b+=dt[k+2]; cnt++; }
-      r=Math.round(r/cnt); g=Math.round(g/cnt); b=Math.round(b/cnt);
-      // buat dua spot: core & highlight lembut
-      lastAuraBg =
-        `radial-gradient(46% 46% at 50% 50%, rgba(${r},${g},${b},0.45) 0%, rgba(0,0,0,0.92) 68%),`+
-        `radial-gradient(30% 30% at 70% 40%, rgba(${r},${g},${b},0.22), rgba(0,0,0,0) 70%)`;
-      // apply langsung ke blurBg (baik normal maupun fullscreen)
-      blurBg.style.background = lastAuraBg;
-    };
-  }
+  // jalankan React background juga
+  if(window.updateGraviBackground) window.updateGraviBackground(u);
+
+  const i=new Image(); i.crossOrigin='anonymous'; i.src=u;
+  i.onload=()=>{
+    const c=document.createElement('canvas'), x=c.getContext('2d',{willReadFrequently:true});
+    c.width=64; c.height=64; x.drawImage(i,0,0,64,64);
+    const dt=x.getImageData(0,0,64,64).data;
+    let r=0,g=0,b=0,cnt=0;
+    for(let k=0;k<dt.length;k+=4){ r+=dt[k]; g+=dt[k+1]; b+=dt[k+2]; cnt++; }
+    r=Math.round(r/cnt); g=Math.round(g/cnt); b=Math.round(b/cnt);
+    lastAuraBg =
+      `radial-gradient(46% 46% at 50% 50%, rgba(${r},${g},${b},0.45) 0%, rgba(0,0,0,0.92) 68%),
+       radial-gradient(30% 30% at 70% 40%, rgba(${r},${g},${b},0.22), rgba(0,0,0,0) 70%)`;
+    blurBg.style.background = lastAuraBg;
+  };
+}
 </script>
 </body>
 </html>
