@@ -34,7 +34,7 @@ body{
 @keyframes fadeInButton{0%{opacity:0;transform:translateY(40px)}100%{opacity:1;transform:translateY(0)}}
 
 /* Frame */
-.frame{position:relative;z-index:1;width:100vw;height:100vh;border-radius:38px;background:#000;overflow:hidden;opacity:0;transition:opacity 2s ease;}
+.frame{position:relative;width:100vw;height:100vh;border-radius:38px;background:#000;overflow:hidden;opacity:0;transition:opacity 2s ease;}
 .frame::before{content:'';position:absolute;inset:0;border-radius:38px;padding:6px;
   background:linear-gradient(120deg,var(--m-blue),var(--m-purple),var(--gravi-cyan),var(--m-red),var(--m-darkblue));
   background-size:400% 400%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
@@ -261,23 +261,6 @@ body.fullscreen-lock, html.fullscreen-lock { overflow: hidden !important; }
   inset: 0;
   height: 100%;
 }
-
-/* === React adaptive background visibility fix === */
-#gravi-react-bg {
-  position: fixed;
-  inset: 0;
-  z-index: -1; /* <– penting: di belakang frame tapi masih kelihatan */
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 1.2s ease-in-out;
-  filter: blur(100px) saturate(180%) brightness(85%);
-}
-
-/* aktif hanya saat fullscreen */
-.frame.fullscreen ~ #gravi-react-bg {
-  opacity: 1;
-}
-
 
 /* ===== Scroll Toggle Button (muncul saat fullscreen) ===== */
 .scroll-toggle {
@@ -629,9 +612,6 @@ scrollToggle.style.display = 'none'; // sembunyikan awal
 
 function enterFullscreen(){
   frame.classList.add('fullscreen');
-  // aktifkan React adaptive blur
-  if (window.updateGraviBackground) window.updateGraviBackground(npC.src);
-
   blurBg.style.background = lastAuraBg || 'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.8), #000)';
   blurBg.style.animation = 'fs-rotate 36s linear infinite';
   blurBg.style.filter = 'blur(70px)';
@@ -652,7 +632,6 @@ function enterFullscreen(){
 
 function exitFullscreen(){
   frame.classList.remove('fullscreen');
-  if (window.updateGraviBackground) window.updateGraviBackground('');
   if(frame.classList.contains('appleflow')){
     blurBg.style.background =
       'radial-gradient(45% 45% at 52% 48%, #002622 0%, #000 70%),' +
