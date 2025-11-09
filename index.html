@@ -176,16 +176,13 @@ body.appleflow-active{background:#000;}
 .frame.fullscreen .np-title,.frame.fullscreen .np-artist{display:none}
 
 /* Layer kabut adaptif saat fullscreen */
-.frame {
-  position: relative;
-  z-index: 1;
-  width: 100vw;
-  height: 100vh;
-  border-radius: 38px;
-  background: #000;
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity 2s ease;
+.frame.fullscreen .blur-bg{
+  inset:-14%;
+  filter:blur(70px);
+  will-change: transform, opacity;
+  animation: fs-rotate 36s linear infinite;
+  opacity:.95;
+  transition: opacity .6s ease, transform .6s ease, background .8s ease;
 }
 
 /* ===== Fullscreen layout refined (for mobile & desktop) ===== */
