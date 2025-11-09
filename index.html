@@ -34,7 +34,7 @@ body{
 @keyframes fadeInButton{0%{opacity:0;transform:translateY(40px)}100%{opacity:1;transform:translateY(0)}}
 
 /* Frame */
-.frame{position:relative;width:100vw;height:100vh;border-radius:38px;background:#000;overflow:hidden;opacity:0;transition:opacity 2s ease;}
+.frame{position:relative; z-index:0; width:100vw;height:100vh;border-radius:38px;background:#000;overflow:hidden;opacity:0;transition:opacity 2s ease;}
 .frame::before{content:'';position:absolute;inset:0;border-radius:38px;padding:6px;
   background:linear-gradient(120deg,var(--m-blue),var(--m-purple),var(--gravi-cyan),var(--m-red),var(--m-darkblue));
   background-size:400% 400%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
@@ -285,6 +285,19 @@ body.fullscreen-lock, html.fullscreen-lock { overflow: hidden !important; }
 .frame.fullscreen .scroll-toggle { opacity: 1; pointer-events: auto; }
 
 @keyframes fs-rotate{from{transform:rotate(0deg) scale(1.05)}to{transform:rotate(360deg) scale(1.05)}}
+
+/* === React adaptive background visibility (MUNCUL HANYA SAAT FULLSCREEN) === */
+#gravi-react-bg{
+  position:fixed; inset:0;
+  /* z-index di atas background frame (0/1) tapi di bawah konten (.content z-index:10) */
+  z-index:5;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 1.2s ease-in-out;
+  filter:blur(100px) saturate(180%) brightness(85%);
+}
+/* aktif saat fullscreen */
+.frame.fullscreen ~ #gravi-react-bg{ opacity:1; }
 </style>
 
 <!-- React + Babel + ColorThief -->
@@ -336,10 +349,11 @@ body.fullscreen-lock, html.fullscreen-lock { overflow: hidden !important; }
   <button id="appleBtn" class="btn">Apple Flow</button>
   <button id="rgbBtn" class="btn">RGB Live</button>
 </div>
+
 <!-- React Apple Music-style Background -->
 <div id="gravi-react-bg"></div>
-<script type="text/babel">
 
+<script type="text/babel">
 const { useEffect, useRef, useState } = React;
 
 function GraviMusicBackground({ imageUrl }) {
@@ -350,6 +364,7 @@ function GraviMusicBackground({ imageUrl }) {
   );
 
   useEffect(() => {
+    if (!imageUrl) return; // kalau kosong, biar tidak error saat exit fullscreen
     const img = imgRef.current;
     const colorThief = new ColorThief();
 
@@ -357,15 +372,22 @@ function GraviMusicBackground({ imageUrl }) {
       try {
         const color = colorThief.getColor(img);
         const palette = colorThief.getPalette(img, 3);
-        const [r, g, b] = color;
-        const [r2, g2, b2] = palette[1] || [r - 40, g - 40, b - 40];
-        const [r3, g3, b3] = palette[2] || [r - 70, g - 70, b - 70];
+        const [r, g, b]   = color;
+        const [r2,g2,b2]  = palette?.[1] ?? [Math.max(r-40,0), Math.max(g-40,0), Math.max(b-40,0)];
+        const [r3,g3,b3]  = palette?.[2] ?? [Math.max(r-70,0), Math.max(g-70,0), Math.max(b-70,0)];
+
         const newGrad = `
-          radial-gradient(circle at 30% 30%, rgba(${r},${g},${b},0.9),
-          rgba(${r2},${g2},${b2},0.7),
-          rgba(${r3},${g3},${b3},1))
+          radial-gradient(40% 40% at 35% 35%, rgba(${r},${g},${b},0.85), rgba(${r2},${g2},${b2},0.55)),
+          radial-gradient(28% 28% at 70% 40%, rgba(${r3},${g3},${b3},0.55), rgba(0,0,0,0) 70%)
         `;
         setGradient(newGrad);
+
+        // soft breath setiap ganti lagu (halus)
+        const el = bgRef.current;
+        if (el) {
+          el.style.opacity = '0.7';
+          setTimeout(()=>{ el.style.opacity = '1'; }, 250);
+        }
       } catch(e) {}
     };
 
@@ -381,20 +403,22 @@ function GraviMusicBackground({ imageUrl }) {
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: -1,
+        zIndex: 5,                 // di atas frame bg, di bawah content (z=10)
         background: gradient,
-        filter: 'blur(90px) saturate(200%) brightness(80%)',
-        transition: 'background 2.5s ease-in-out',
+        filter: 'blur(100px) saturate(180%) brightness(85%)',
+        transition: 'background 2.5s ease-in-out, opacity 1.2s ease',
+        pointerEvents: 'none'
       }}
     >
-      <img ref={imgRef} src={imageUrl} crossOrigin='anonymous' style={{ display: 'none' }} />
+      {/* img sumber ekstraksi warna (disembunyikan) */}
+      {imageUrl ? <img ref={imgRef} src={imageUrl} crossOrigin='anonymous' style={{ display: 'none' }} /> : null}
     </div>
   );
 }
 
-// Global function for GRAVI system to update React background
+// API global untuk di-trigger dari kode GRAVI (adaptAura / fullscreen)
 window.updateGraviBackground = (imageUrl) => {
-  ReactDOM.render(<GraviMusicBackground imageUrl={imageUrl} />, document.getElementById('gravi-react-bg'));
+  ReactDOM.render(<GraviMusicBackground imageUrl={imageUrl || ''} />, document.getElementById('gravi-react-bg'));
 };
 </script>
 
@@ -591,117 +615,119 @@ window.updateGraviBackground = (imageUrl) => {
   /* ===== Fullscreen behaviour ===== */
 
   function lockScroll() {
-  const content = document.getElementById('content');
-  content.style.overflow = 'hidden';
-  content.style.touchAction = 'none'; // cegah gesture scroll
-  document.body.style.overflow = 'hidden'; // optional
-}
+    const content = document.getElementById('content');
+    content.style.overflow = 'hidden';
+    content.style.touchAction = 'none';
+    document.body.style.overflow = 'hidden';
+  }
 
-function unlockScroll() {
-  const content = document.getElementById('content');
-  content.style.overflow = 'auto';
-  content.style.webkitOverflowScrolling = 'touch'; // aktifkan momentum scroll di iOS
-  content.style.touchAction = 'auto'; // izinkan swipe
-  document.body.style.overflow = ''; // normal lagi
-}
+  function unlockScroll() {
+    const content = document.getElementById('content');
+    content.style.overflow = 'auto';
+    content.style.webkitOverflowScrolling = 'touch';
+    content.style.touchAction = 'auto';
+    document.body.style.overflow = '';
+  }
 
   let lastAuraBg = '';
-const scrollToggle = document.getElementById('scrollToggle');
-let scrollLocked = true; // default: terkunci saat fullscreen
-scrollToggle.style.display = 'none'; // sembunyikan awal
+  const scrollToggle = document.getElementById('scrollToggle');
+  let scrollLocked = true; // default: terkunci saat fullscreen
+  scrollToggle.style.display = 'none'; // sembunyikan awal
 
-function enterFullscreen(){
-  frame.classList.add('fullscreen');
-  blurBg.style.background = lastAuraBg || 'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.8), #000)';
-  blurBg.style.animation = 'fs-rotate 36s linear infinite';
-  blurBg.style.filter = 'blur(70px)';
-  blurBg.style.opacity = '0.96';
+  function enterFullscreen(){
+    frame.classList.add('fullscreen');
 
-  // Lock scroll by default
-  lockScroll();
-  document.getElementById('content').style.overflow = 'hidden';
-  scrollLocked = true;
-  scrollToggle.textContent = '🔓 Unlock Scroll';
+    // aktifkan React adaptive blur dengan cover saat ini
+    if (window.updateGraviBackground) window.updateGraviBackground(npC.src || '');
 
-  // Munculkan tombol hanya setelah fullscreen aktif
-  setTimeout(() => {
-    scrollToggle.style.display = 'block';
-    scrollToggle.style.opacity = '1';
-  }, 400);
-}
+    blurBg.style.background = lastAuraBg || 'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.8), #000)';
+    blurBg.style.animation = 'fs-rotate 36s linear infinite';
+    blurBg.style.filter = 'blur(70px)';
+    blurBg.style.opacity = '0.96';
 
-function exitFullscreen(){
-  frame.classList.remove('fullscreen');
-  if(frame.classList.contains('appleflow')){
-    blurBg.style.background =
-      'radial-gradient(45% 45% at 52% 48%, #002622 0%, #000 70%),' +
-      'radial-gradient(38% 38% at 62% 42%, rgba(0,232,208,.20), rgba(0,0,0,0) 70%),' +
-      'radial-gradient(32% 32% at 38% 62%, rgba(0,190,170,.16), rgba(0,0,0,0) 72%)';
-    blurBg.style.animation = 'af-rotate 32s linear infinite';
-    blurBg.style.filter='blur(70px)';
-    blurBg.style.opacity='0.95';
-  } else {
-    blurBg.style.animation='';
-    blurBg.style.filter='blur(80px)';
-    blurBg.style.opacity='1';
-    blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
-  }
-
-  unlockScroll();
-  document.getElementById('content').style.overflow = 'auto';
-
-  // Sembunyikan tombol saat keluar fullscreen
-  scrollToggle.style.opacity = '0';
-  setTimeout(() => { scrollToggle.style.display = 'none'; }, 300);
-}
-
-// Klik cover untuk toggle fullscreen
-npC.addEventListener('click', ()=>{
-  playUISound();
-  if(frame.classList.contains('fullscreen')) exitFullscreen(); 
-  else enterFullscreen();
-});
-
-// Klik tombol untuk toggle scroll lock/unlock
-scrollToggle.onclick = () => {
-  playUISound();
-  scrollLocked = !scrollLocked;
-  const content = document.getElementById('content');
-
-  if (scrollLocked) {
     lockScroll();
+    document.getElementById('content').style.overflow = 'hidden';
+    scrollLocked = true;
     scrollToggle.textContent = '🔓 Unlock Scroll';
-  } else {
-    unlockScroll();
-    scrollToggle.textContent = '🔒 Lock Scroll';
-    // Pastikan Safari benar-benar update layout
-    requestAnimationFrame(() => {
-      content.scrollTop = 1;
-    });
+
+    setTimeout(() => {
+      scrollToggle.style.display = 'block';
+      scrollToggle.style.opacity = '1';
+    }, 400);
   }
-};
 
+  function exitFullscreen(){
+    frame.classList.remove('fullscreen');
 
+    // matikan React blur (biar opacity 0 via CSS)
+    if (window.updateGraviBackground) window.updateGraviBackground('');
+
+    if(frame.classList.contains('appleflow')){
+      blurBg.style.background =
+        'radial-gradient(45% 45% at 52% 48%, #002622 0%, #000 70%),' +
+        'radial-gradient(38% 38% at 62% 42%, rgba(0,232,208,.20), rgba(0,0,0,0) 70%),' +
+        'radial-gradient(32% 32% at 38% 62%, rgba(0,190,170,.16), rgba(0,0,0,0) 72%)';
+      blurBg.style.animation = 'af-rotate 32s linear infinite';
+      blurBg.style.filter='blur(70px)';
+      blurBg.style.opacity='0.95';
+    } else {
+      blurBg.style.animation='';
+      blurBg.style.filter='blur(80px)';
+      blurBg.style.opacity='1';
+      blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
+    }
+
+    unlockScroll();
+    document.getElementById('content').style.overflow = 'auto';
+
+    scrollToggle.style.opacity = '0';
+    setTimeout(() => { scrollToggle.style.display = 'none'; }, 300);
+  }
+
+  // Klik cover untuk toggle fullscreen
+  npC.addEventListener('click', ()=>{
+    playUISound();
+    if(frame.classList.contains('fullscreen')) exitFullscreen();
+    else enterFullscreen();
+  });
+
+  // Klik tombol untuk toggle scroll lock/unlock
+  scrollToggle.onclick = () => {
+    playUISound();
+    scrollLocked = !scrollLocked;
+    const content = document.getElementById('content');
+
+    if (scrollLocked) {
+      lockScroll();
+      scrollToggle.textContent = '🔓 Unlock Scroll';
+    } else {
+      unlockScroll();
+      scrollToggle.textContent = '🔒 Lock Scroll';
+      requestAnimationFrame(() => {
+        content.scrollTop = 1;
+      });
+    }
+  };
 
   /* Aura adapt + blur – generate gradient yang enak untuk fullscreen */
   function adaptAura(u){
-  // jalankan React background juga
-  if(window.updateGraviBackground) window.updateGraviBackground(u);
+    // jalankan React background juga
+    if(window.updateGraviBackground) window.updateGraviBackground(u || '');
 
-  const i=new Image(); i.crossOrigin='anonymous'; i.src=u;
-  i.onload=()=>{
-    const c=document.createElement('canvas'), x=c.getContext('2d',{willReadFrequently:true});
-    c.width=64; c.height=64; x.drawImage(i,0,0,64,64);
-    const dt=x.getImageData(0,0,64,64).data;
-    let r=0,g=0,b=0,cnt=0;
-    for(let k=0;k<dt.length;k+=4){ r+=dt[k]; g+=dt[k+1]; b+=dt[k+2]; cnt++; }
-    r=Math.round(r/cnt); g=Math.round(g/cnt); b=Math.round(b/cnt);
-    lastAuraBg =
-      `radial-gradient(46% 46% at 50% 50%, rgba(${r},${g},${b},0.45) 0%, rgba(0,0,0,0.92) 68%),
-       radial-gradient(30% 30% at 70% 40%, rgba(${r},${g},${b},0.22), rgba(0,0,0,0) 70%)`;
-    blurBg.style.background = lastAuraBg;
-  };
-}
+    const i=new Image(); i.crossOrigin='anonymous'; i.src=u;
+    i.onload=()=>{
+      const c=document.createElement('canvas'), x=c.getContext('2d',{willReadFrequently:true});
+      c.width=64; c.height=64; x.drawImage(i,0,0,64,64);
+      const dt=x.getImageData(0,0,64,64).data;
+      let r=0,g=0,b=0,cnt=0;
+      for(let k=0;k<dt.length;k+=4){ r+=dt[k]; g+=dt[k+1]; b+=dt[k+2]; cnt++; }
+      r=Math.round(r/cnt); g=Math.round(g/cnt); b=Math.round(b/cnt);
+      lastAuraBg =
+        `radial-gradient(46% 46% at 50% 50%, rgba(${r},${g},${b},0.45) 0%, rgba(0,0,0,0.92) 68%),
+         radial-gradient(30% 30% at 70% 40%, rgba(${r},${g},${b},0.22), rgba(0,0,0,0) 70%)`;
+      blurBg.style.background = lastAuraBg;
+    };
+  }
 </script>
 </body>
 </html>
