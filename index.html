@@ -262,6 +262,22 @@ body.fullscreen-lock, html.fullscreen-lock { overflow: hidden !important; }
   height: 100%;
 }
 
+/* 🎧 React adaptive blur control */
+#gravi-react-bg {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.2s ease-in-out;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+
+/* aktif hanya saat fullscreen */
+.frame.fullscreen ~ #gravi-react-bg {
+  opacity: 1;
+}
+
+
 /* ===== Scroll Toggle Button (muncul saat fullscreen) ===== */
 .scroll-toggle {
   position: absolute;
@@ -612,6 +628,9 @@ scrollToggle.style.display = 'none'; // sembunyikan awal
 
 function enterFullscreen(){
   frame.classList.add('fullscreen');
+  // aktifkan React adaptive blur
+  if (window.updateGraviBackground) window.updateGraviBackground(npC.src);
+
   blurBg.style.background = lastAuraBg || 'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.8), #000)';
   blurBg.style.animation = 'fs-rotate 36s linear infinite';
   blurBg.style.filter = 'blur(70px)';
@@ -632,6 +651,7 @@ function enterFullscreen(){
 
 function exitFullscreen(){
   frame.classList.remove('fullscreen');
+  if (window.updateGraviBackground) window.updateGraviBackground('');
   if(frame.classList.contains('appleflow')){
     blurBg.style.background =
       'radial-gradient(45% 45% at 52% 48%, #002622 0%, #000 70%),' +
