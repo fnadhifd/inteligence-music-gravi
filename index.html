@@ -140,108 +140,185 @@ body{
 body.appleflow-active{background:#000;}
 @media (prefers-reduced-motion: reduce){.frame.appleflow .blur-bg{animation:none !important;}}
 
-/* =========================
-   ✨ FUSION BACKDROP (aktif hanya saat fullscreen)
-   ========================= */
-
-/* layer React adaptif (dibawah konten, di atas blurBg) */
-#gravi-react-bg{
-  position:fixed; inset:0; z-index:5; pointer-events:none;
-  opacity:0; transition:opacity 900ms ease;
-  filter:blur(90px) saturate(185%) brightness(85%);
+@keyframes graviPulse {
+  0% { transform: scale(1) translateY(0); filter: blur(100px) brightness(85%) saturate(180%); }
+  50% { transform: scale(1.05) translateY(-1%); filter: blur(110px) brightness(90%) saturate(200%); }
+  100% { transform: scale(1) translateY(0); filter: blur(100px) brightness(85%) saturate(180%); }
 }
 
-/* gelombang breathing ringan (GPU friendly) */
-@keyframes fusionPulse{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
-.frame.fullscreen ~ #gravi-react-bg{
-  opacity:1; animation:fusionPulse 16s ease-in-out infinite;
+#gravi-react-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s ease-in-out;
+  filter: blur(100px) saturate(180%) brightness(85%);
+  animation: graviPulse 12s ease-in-out infinite; /* 💫 Efek hidup */
 }
 
-/* vignette & glass halo untuk kedalaman */
-.fusion-vignette{
-  position:fixed; inset:-2%; z-index:6; pointer-events:none; opacity:0;
-  background:
-    radial-gradient(120% 120% at 50% 50%, rgba(0,0,0,0) 46%, rgba(0,0,0,.35) 78%, rgba(0,0,0,.7) 100%),
-    radial-gradient(60% 60% at 48% 34%, rgba(255,255,255,.06), rgba(255,255,255,0) 60%);
-  transition:opacity 600ms ease;
-}
-.frame.fullscreen ~ .fusion-vignette{ opacity:1; }
 
 /* =========================
    ✅ FULLSCREEN PLAYER (SMOOTH)
    ========================= */
+.frame.fullscreen{
+  /* gunakan latar dari adaptAura; vignette lembut di pinggir */
+}
 .frame.fullscreen::before{opacity:0}
-.frame.fullscreen::after{opacity:0} /* digantikan oleh fusion-vignette */
-
+.frame.fullscreen::after{
+  background: radial-gradient(130% 130% at 50% 50%,
+              rgba(0,0,0,0) 42%,
+              rgba(0,0,0,.40) 80%,
+              rgba(0,0,0,.70) 100%);
+  filter:none;animation:none;opacity:1;
+}
+.frame.fullscreen .content{
+  /* sembunyikan elemen lain pelan */
+  opacity:.98; transition: opacity .35s ease;
+}
 .frame.fullscreen .grid,
 .frame.fullscreen .playlist-view,
 .frame.fullscreen .title,
 .frame.fullscreen .connect-btn{opacity:0;pointer-events:none}
 
+/* Posisikan cover ke tengah, besar, smooth */
 .frame.fullscreen .np{
-  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
-  z-index:12; padding:0 20px; text-align:center;
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:12;
 }
-
 .frame.fullscreen .np-cover{
-  width:min(72vmin, 420px); height:min(72vmin, 420px);
-  border-radius:24px; object-fit:cover;
+  width:min(70vmin,520px);height:min(70vmin,520px);
   transform:translateZ(0) scale(1.02);
   box-shadow:0 40px 120px rgba(0,0,0,.55);
-  transition:transform .6s cubic-bezier(.2,.8,.2,1), box-shadow .6s;
+  border-radius:24px;
+}
+.frame.fullscreen .np-title,.frame.fullscreen .np-artist{display:none}
+
+/* Layer kabut adaptif saat fullscreen */
+.frame.fullscreen .blur-bg{
+  inset:-14%;
+  filter:blur(70px);
+  will-change: transform, opacity;
+  animation: fs-rotate 36s linear infinite;
+  opacity:.95;
+  transition: opacity .6s ease, transform .6s ease, background .8s ease;
 }
 
-.frame.fullscreen .np-title{
-  display:block !important;
-  font-size: clamp(1.6rem, 5vw, 2rem);
-  font-weight: 900; letter-spacing:.35px; margin-top: 14px;
-  color:#fff;
-  /* tajam + glow tipis */
-  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+/* ===== Fullscreen layout refined (for mobile & desktop) ===== */
+.frame.fullscreen .np {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  z-index: 12;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.frame.fullscreen .np-cover {
+  width: min(72vmin, 340px);
+  height: min(72vmin, 340px);
+  border-radius: 24px;
+  object-fit: cover;
+  box-shadow: 0 40px 120px rgba(0,0,0,.6);
+  transform: scale(1.02);
+  transition: transform .6s cubic-bezier(.2,.8,.2,1);
+}
+
+/* judul & artis responsif dan elegan */
+.frame.fullscreen .np-title {
+  display: block !important;
+  font-size: clamp(1.4rem, 4.8vw, 1.8rem);
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  margin-top: 18px;
+  text-align: center;
+  color: #ffffff;
   text-shadow:
-    0 6px 20px rgba(0,0,0,.55),
-    0 0 26px rgba(0,255,230,.18);
-  animation:fadeInTextFS .8s ease forwards;
+    0 4px 16px rgba(0,0,0,0.6),
+    0 0 20px rgba(0,255,240,0.25);
+  animation: fadeInTextFS .8s ease forwards;
 }
 
-.frame.fullscreen .np-artist{
-  display:block !important;
-  font-size: clamp(1rem, 3.2vw, 1.2rem);
-  font-weight:600; opacity:.92; color:#e9f7ff;
-  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+.frame.fullscreen .np-artist {
+  display: block !important;
+  font-size: clamp(1rem, 3.8vw, 1.3rem);
+  font-weight: 600;
+  opacity: 0.9;
+  color: #cfefff;
   text-shadow:
-    0 4px 14px rgba(0,0,0,.5),
-    0 0 18px rgba(0,220,255,.18);
-  animation:fadeInTextFS 1s ease forwards;
+    0 3px 12px rgba(0,0,0,0.5),
+    0 0 16px rgba(0,200,255,0.2);
+  animation: fadeInTextFS 1s ease forwards;
 }
 
-@keyframes fadeInTextFS {from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)}}
+@keyframes fadeInTextFS {
+  from {opacity:0; transform:translateY(8px);}
+  to {opacity:1; transform:translateY(0);}
+}
 
-/* kunci scroll saat fullscreen (default) */
-.frame.fullscreen .content { overflow:hidden !important; }
-body.fullscreen-lock, html.fullscreen-lock { overflow:hidden !important; }
+/* pastikan content & body tidak bisa scroll */
+.frame.fullscreen .content { overflow: hidden !important; }
+body.fullscreen-lock, html.fullscreen-lock { overflow: hidden !important; }
 
-/* sembunyikan tombol bawah agar cinematic */
-.frame.fullscreen ~ .buttons { opacity:0; pointer-events:none; transition:opacity .5s ease; }
+/* sembunyikan tombol bawah agar lebih cinematic */
+.frame.fullscreen ~ .buttons {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .5s ease;
+}
 
 /* biar scroll di content lancar di iPhone */
-#content { -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
+#content {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
 /* saat fullscreen, content bisa scroll kalau unlock aktif */
-.frame.fullscreen .content { position:absolute; inset:0; height:100%; }
+.frame.fullscreen .content {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+}
 
 /* ===== Scroll Toggle Button (muncul saat fullscreen) ===== */
 .scroll-toggle {
-  position: absolute; top: 20px; right: 20px;
-  background: rgba(20,20,20,0.35);
-  border: 1px solid rgba(255,255,255,0.22);
-  color: #fff; padding: 10px 16px; border-radius: 14px; font-size: 0.9rem;
-  cursor: pointer; backdrop-filter: blur(10px); z-index: 40;
-  transition: background .3s, transform .3s, opacity .35s ease; opacity:0; pointer-events:none;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  z-index: 40;
+  transition: background .3s, transform .3s, opacity .35s ease;
+  opacity: 0;
+  pointer-events: none;
 }
-.scroll-toggle:hover { background: rgba(255,255,255,0.22); transform: scale(1.05); }
-.frame.fullscreen .scroll-toggle { opacity:1; pointer-events:auto; }
+.scroll-toggle:hover { background: rgba(255,255,255,0.2); transform: scale(1.05); }
+/* tampil hanya di fullscreen */
+.frame.fullscreen .scroll-toggle { opacity: 1; pointer-events: auto; }
 
 @keyframes fs-rotate{from{transform:rotate(0deg) scale(1.05)}to{transform:rotate(360deg) scale(1.05)}}
+
+/* === React adaptive background visibility (MUNCUL HANYA SAAT FULLSCREEN) === */
+#gravi-react-bg{
+  position:fixed; inset:0;
+  /* z-index di atas background frame (0/1) tapi di bawah konten (.content z-index:10) */
+  z-index:5;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 1.2s ease-in-out;
+  filter:blur(100px) saturate(180%) brightness(85%);
+}
+/* aktif saat fullscreen */
+.frame.fullscreen ~ #gravi-react-bg{ opacity:1; }
 </style>
 
 <!-- React + Babel + ColorThief -->
@@ -294,9 +371,8 @@ body.fullscreen-lock, html.fullscreen-lock { overflow:hidden !important; }
   <button id="rgbBtn" class="btn">RGB Live</button>
 </div>
 
-<!-- Fusion adaptive layer (React) + Vignette -->
+<!-- React Apple Music-style Background -->
 <div id="gravi-react-bg"></div>
-<div class="fusion-vignette"></div>
 
 <script type="text/babel">
 const { useEffect, useRef, useState } = React;
@@ -305,39 +381,40 @@ function GraviMusicBackground({ imageUrl }) {
   const bgRef = useRef(null);
   const imgRef = useRef(null);
   const [gradient, setGradient] = useState(
-    'radial-gradient(circle at 35% 35%, rgba(0,0,0,.8), #000)'
+    'radial-gradient(circle at top left, rgba(0,0,0,0.8), #000)'
   );
 
   useEffect(() => {
-    if (!imageUrl) return;
+    if (!imageUrl) return; // kalau kosong, biar tidak error saat exit fullscreen
     const img = imgRef.current;
     const colorThief = new ColorThief();
 
     const applyColor = () => {
       try {
         const color = colorThief.getColor(img);
-        const palette = colorThief.getPalette(img, 4);
-        const [r,g,b] = color;
-        const [r2,g2,b2] = palette?.[1] ?? [Math.max(r-40,0),Math.max(g-40,0),Math.max(b-40,0)];
-        const [r3,g3,b3] = palette?.[2] ?? [Math.max(r-70,0),Math.max(g-70,0),Math.max(b-70,0)];
-        const [r4,g4,b4] = palette?.[3] ?? [0,0,0];
+        const palette = colorThief.getPalette(img, 3);
+        const [r, g, b]   = color;
+        const [r2,g2,b2]  = palette?.[1] ?? [Math.max(r-40,0), Math.max(g-40,0), Math.max(b-40,0)];
+        const [r3,g3,b3]  = palette?.[2] ?? [Math.max(r-70,0), Math.max(g-70,0), Math.max(b-70,0)];
 
-        /* FUSION: dua core glow + satu tint lembut */
         const newGrad = `
-          radial-gradient(36% 36% at 38% 38%, rgba(${r},${g},${b},0.62), rgba(0,0,0,0) 65%),
-          radial-gradient(30% 30% at 68% 42%, rgba(${r2},${g2},${b2},0.38), rgba(0,0,0,0) 70%),
-          radial-gradient(22% 22% at 26% 64%, rgba(${r3},${g3},${b3},0.28), rgba(0,0,0,0) 76%),
-          radial-gradient(110% 110% at 50% 50%, rgba(${r4},${g4},${b4},0.15), #000 78%)
+          radial-gradient(40% 40% at 35% 35%, rgba(${r},${g},${b},0.85), rgba(${r2},${g2},${b2},0.55)),
+          radial-gradient(28% 28% at 70% 40%, rgba(${r3},${g3},${b3},0.55), rgba(0,0,0,0) 70%)
         `;
         setGradient(newGrad);
 
+        // soft breath setiap ganti lagu (halus)
         const el = bgRef.current;
-        if (el) { el.style.opacity='0.85'; requestAnimationFrame(()=> el.style.opacity='1'); }
+        if (el) {
+          el.style.opacity = '0.7';
+          setTimeout(()=>{ el.style.opacity = '1'; }, 250);
+        }
       } catch(e) {}
     };
 
     if (img.complete) applyColor();
     else img.addEventListener('load', applyColor);
+
     return () => img.removeEventListener('load', applyColor);
   }, [imageUrl]);
 
@@ -345,18 +422,22 @@ function GraviMusicBackground({ imageUrl }) {
     <div
       ref={bgRef}
       style={{
-        position:'fixed', inset:0, zIndex:5, pointerEvents:'none',
+        position: 'fixed',
+        inset: 0,
+        zIndex: 5,                 // di atas frame bg, di bawah content (z=10)
         background: gradient,
-        filter:'blur(90px) saturate(185%) brightness(85%)',
-        transition:'background 1200ms ease, opacity 900ms ease'
+        filter: 'blur(100px) saturate(180%) brightness(85%)',
+        transition: 'background 2.5s ease-in-out, opacity 1.2s ease',
+        pointerEvents: 'none'
       }}
     >
-      <img ref={imgRef} src={imageUrl} crossOrigin="anonymous" style={{display:'none'}} />
+      {/* img sumber ekstraksi warna (disembunyikan) */}
+      {imageUrl ? <img ref={imgRef} src={imageUrl} crossOrigin='anonymous' style={{ display: 'none' }} /> : null}
     </div>
   );
 }
 
-/* API global: dipanggil dari adaptAura()/enterFullscreen() */
+// API global untuk di-trigger dari kode GRAVI (adaptAura / fullscreen)
 window.updateGraviBackground = (imageUrl) => {
   ReactDOM.render(<GraviMusicBackground imageUrl={imageUrl || ''} />, document.getElementById('gravi-react-bg'));
 };
@@ -380,7 +461,7 @@ window.updateGraviBackground = (imageUrl) => {
     setTimeout(()=>{ intro.style.display='none'; frame.style.opacity='1'; bottomBtns.style.display='flex'; },2000);
   };
 
-  /* Apple Flow – toggle */
+  /* Apple Flow – toggle super ringan (restore gradient) */
   document.getElementById('appleBtn').onclick=()=>{
     playUISound();
     frame.classList.remove('rgb');
@@ -388,6 +469,7 @@ window.updateGraviBackground = (imageUrl) => {
     document.body.classList.toggle('appleflow-active');
 
     if(frame.classList.contains('appleflow')){
+      // set ulang gradient Apple Flow
       blurBg.style.background =
         'radial-gradient(45% 45% at 52% 48%, #002622 0%, #000 70%),' +
         'radial-gradient(38% 38% at 62% 42%, rgba(0,232,208,.20), rgba(0,0,0,0) 70%),' +
@@ -396,6 +478,7 @@ window.updateGraviBackground = (imageUrl) => {
       blurBg.style.animation='af-rotate 32s linear infinite';
       blurBg.style.opacity='0.95';
     }else{
+      // back to default
       blurBg.style.animation='';
       blurBg.style.opacity='1';
       blurBg.style.filter='blur(80px)';
@@ -412,7 +495,6 @@ window.updateGraviBackground = (imageUrl) => {
     blurBg.style.animation=''; blurBg.style.opacity='1';
     blurBg.style.filter='blur(80px)';
     blurBg.style.background='radial-gradient(circle at 50% 50%, rgba(0,0,0,0.7), #000)';
-    if (window.updateGraviBackground) window.updateGraviBackground('');
   };
 
   /* Spotify Auth */
@@ -516,7 +598,7 @@ window.updateGraviBackground = (imageUrl) => {
     const cover=track.album.images[0]?.url;
     npC.src=cover; npT.textContent=track.name; npA.textContent=track.artists.map(a=>a.name).join(', ');
     np.style.display='flex';
-    adaptAura(cover);
+    adaptAura(cover);            // -> set background sesuai cover
     dim.classList.add('on');
   }
 
@@ -576,9 +658,8 @@ window.updateGraviBackground = (imageUrl) => {
   function enterFullscreen(){
     frame.classList.add('fullscreen');
 
-    /* hidupkan fusion layer: React adaptif + vignette */
+    // aktifkan React adaptive blur dengan cover saat ini
     if (window.updateGraviBackground) window.updateGraviBackground(npC.src || '');
-    document.querySelector('.fusion-vignette').style.opacity = '1';
 
     blurBg.style.background = lastAuraBg || 'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.8), #000)';
     blurBg.style.animation = 'fs-rotate 36s linear infinite';
@@ -593,15 +674,14 @@ window.updateGraviBackground = (imageUrl) => {
     setTimeout(() => {
       scrollToggle.style.display = 'block';
       scrollToggle.style.opacity = '1';
-    }, 350);
+    }, 400);
   }
 
   function exitFullscreen(){
     frame.classList.remove('fullscreen');
 
-    /* matikan fusion layer */
+    // matikan React blur (biar opacity 0 via CSS)
     if (window.updateGraviBackground) window.updateGraviBackground('');
-    document.querySelector('.fusion-vignette').style.opacity = '0';
 
     if(frame.classList.contains('appleflow')){
       blurBg.style.background =
@@ -622,7 +702,7 @@ window.updateGraviBackground = (imageUrl) => {
     document.getElementById('content').style.overflow = 'auto';
 
     scrollToggle.style.opacity = '0';
-    setTimeout(() => { scrollToggle.style.display = 'none'; }, 280);
+    setTimeout(() => { scrollToggle.style.display = 'none'; }, 300);
   }
 
   // Klik cover untuk toggle fullscreen
@@ -644,12 +724,15 @@ window.updateGraviBackground = (imageUrl) => {
     } else {
       unlockScroll();
       scrollToggle.textContent = '🔒 Lock Scroll';
-      requestAnimationFrame(() => { content.scrollTop = 1; });
+      requestAnimationFrame(() => {
+        content.scrollTop = 1;
+      });
     }
   };
 
-  /* Aura adapt + cache warna rata (fallback untuk blurBg) */
+  /* Aura adapt + blur – generate gradient yang enak untuk fullscreen */
   function adaptAura(u){
+    // jalankan React background juga
     if(window.updateGraviBackground) window.updateGraviBackground(u || '');
 
     const i=new Image(); i.crossOrigin='anonymous'; i.src=u;
